@@ -1,41 +1,47 @@
 ---
 name: dapter-development
-description: >
-  Configure and apply the Dapter package in Laravel applications.
+description: Install the unreleased Dapter preview in a Laravel 13 and Inertia 3 application, connect its Composer-delivered frontend entry, or check its package version. Do not use for generic Eloquent queries or unimplemented data adapter behavior.
 license: MIT
 metadata:
   author: Allan Mariucci Carvalho
 ---
 
-# Dapter
+# Use the Dapter preview
 
-Use this skill when a Laravel application needs to integrate the Dapter package.
+Dapter currently provides package identity and development foundations. Filtering, searching, sorting, pagination, Vue composables, and adapters are not implemented. Do not invent those APIs.
 
-## Primary Goal
+## Prerequisites
 
-- apply the `artisan-toolbox/dapter` package's public API in the smallest correct way
+Use PHP ^8.5, Laravel ^13.0, and Inertia Laravel ^3.0. Frontend tooling requires Node.js >=24.11.0 and a TypeScript-capable Vite application. There is no stable release.
 
-## Workflow
+## Install a local preview
 
-### 1. Inspect the Laravel app context
+Place the Dapter checkout on its `1.x` branch beside the consuming Laravel application. From the application root, run Composer before npm:
 
-- confirm the app is a Laravel project
-- inspect the target code paths where the package should be applied
+```bash
+composer config repositories.dapter path ../dapter
+composer require artisan-toolbox/dapter:"1.x-dev@dev"
+npm install --install-links ./vendor/artisan-toolbox/dapter
+```
 
-### 2. Apply the package's public API
+The npm dependency resolves from `vendor/artisan-toolbox/dapter`, not the npm registry. Boost is optional development tooling and is not required at runtime.
 
-Document how to integrate Dapter here, replacing this placeholder with the integration steps for your package.
+## Check the installed identity
 
-## Rules, References, and Templates
+```php
+use ArtisanToolbox\Dapter\Dapter;
 
-Read before executing:
+$version = Dapter::VERSION;
+```
 
-- no additional resource files for this skill
+The version is currently `1.0.0-alpha.1`. The service provider registers `Dapter` as a singleton. In a Vite application:
 
-## Examples
+```ts
+import { version } from '@artisan-toolbox/dapter';
 
-- describe a representative integration scenario for Dapter
+console.info(version);
+```
 
-## Anti-patterns
+Both examples report the package version. Use the default frontend entry in Vite. The optional `/dist` entry requires `npm run build` in the package checkout and supplies ESM JavaScript and declaration files for direct Node consumers.
 
-- do not document package internals here; keep the skill focused on adoption in Laravel apps
+See [installation](https://atb.dev.br/docs/dapter/installation) and the [package overview](https://atb.dev.br/packages/dapter/). No configuration or asset publication is required for this identity check.

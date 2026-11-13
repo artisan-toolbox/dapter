@@ -1,60 +1,52 @@
-<div align="center">
+<!-- MAINTAINER:README_HEAD:START -->
+<div id="maintainer-title" align="center">
+    <img src="logo/dapter-icon.svg" alt="" width="88">
     <h1>Dapter</h1>
 </div>
 
-<p align="center">
-    <a href="https://packagist.org/packages/artisan-toolbox/dapter"><img src="https://img.shields.io/packagist/v/artisan-toolbox/dapter.svg?style=flat-square" alt="Packagist"></a>
-    <a href="https://packagist.org/packages/artisan-toolbox/dapter"><img src="https://img.shields.io/packagist/php-v/artisan-toolbox/dapter.svg?style=flat-square" alt="PHP from Packagist"></a>
-    <a href="https://packagist.org/packages/artisan-toolbox/dapter"><img src="https://badge.laravel.cloud/badge/artisan-toolbox/dapter?style=flat" alt="Laravel versions"></a>
-    <a href="https://github.com/artisan-toolbox/dapter/actions"><img alt="GitHub Workflow Status (main)" src="https://img.shields.io/github/actions/workflow/status/artisan-toolbox/dapter/tests.yml?branch=main&label=Tests&style=flat-square"></a>
-    <a href="https://packagist.org/packages/artisan-toolbox/dapter"><img src="https://img.shields.io/packagist/dt/artisan-toolbox/dapter.svg?style=flat-square" alt="Total Downloads"></a>
+<p id="maintainer-badges" align="center">
+<a href="https://atb.dev.br/packages/dapter/"><img src="https://img.shields.io/badge/Status-Preview-FF5947?style=flat-square" alt="Preview"></a>
+<a href="https://atb.dev.br/packages/dapter/#requirements"><img src="https://img.shields.io/badge/PHP-%5E8.5-777BB4?style=flat-square" alt="PHP"></a>
+<a href="https://atb.dev.br/packages/dapter/#requirements"><img src="https://img.shields.io/badge/Laravel-%5E13.0-FF2D20?style=flat-square" alt="Laravel"></a>
+<a href="https://github.com/artisan-toolbox/dapter/actions/workflows/tests.yml?query=branch%3A1.x"><img src="https://img.shields.io/github/actions/workflow/status/artisan-toolbox/dapter/tests.yml?branch=1.x&amp;label=Tests&amp;style=flat-square" alt="Tests"></a>
+<a href="https://atb.dev.br/packages/dapter/"><img src="https://img.shields.io/badge/Docs-Read-blue?style=flat-square" alt="Docs"></a>
 </p>
 
-Dapter bridges Laravel and Inertia with seamless filtering, searching, sorting, and pagination.
+<p id="maintainer-description" align="center">
+    Data adapter foundations for Laravel and Inertia applications.
+</p>
+<!-- MAINTAINER:README_HEAD:END -->
+
+Dapter provides data adapter foundations for Laravel and Inertia applications. This unreleased preview contains package identity and development tooling. Filtering, searching, sorting, and pagination APIs are not implemented yet.
 
 ## Installation
 
-You can install the package via Composer:
+For the local preview, place this checkout beside your Laravel application. From the application root, run:
 
 ```bash
-composer require artisan-toolbox/dapter
-```
-
-You may publish all of the package's resources at once:
-
-```bash
-php artisan vendor:publish --tag="dapter"
-```
-
-Or, you may publish each resource individually:
-
-### Publishing the Public Assets
-
-```bash
-php artisan vendor:publish --tag="dapter-assets"
+composer config repositories.dapter path ../dapter
+composer require artisan-toolbox/dapter:"1.x-dev@dev"
+npm install --install-links ./vendor/artisan-toolbox/dapter
 ```
 
 ## Usage
 
-<!-- Add a basic usage example here. -->
+```php
+use ArtisanToolbox\Dapter\Dapter;
 
-## Changelog
+dump(Dapter::VERSION); // "1.0.0-alpha.1"
+```
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+The frontend entry also exports `version` for checking the installed package identity.
 
-## Contributing
+## Compatibility
 
-Thank you for considering contributing to Dapter! Please review our [contributing guide](.github/CONTRIBUTING.md) to get started.
+PHP ^8.5, Laravel ^13.0, and Inertia Laravel ^3.0. Frontend development requires Node.js >=24.11.0. The preview uses the `1.x` branch and has no stable release.
 
-## Security Vulnerabilities
+## Documentation and policies
 
-Please review [our security policy](.github/SECURITY.md) on how to report security vulnerabilities.
-
-## Credits
-
-- [Allan Mariucci Carvalho](https://github.com/artisan-toolbox)
-- [All Contributors](../../contributors)
-
-## License
-
-Dapter is open-sourced software licensed under the [MIT license](LICENSE.md).
+- [Documentation](https://atb.dev.br/packages/dapter/)
+- [Contributing](https://atb.dev.br/docs/dapter/development)
+- [Security policy](.github/SECURITY.md)
+- [Changelog](CHANGELOG.md)
+- [License](LICENSE.md)

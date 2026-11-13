@@ -1,11 +1,14 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
     "name": "artisan-toolbox/dapter",
-    "description": "Dapter bridges Laravel and Inertia with seamless filtering, searching, sorting, and pagination.",
+    "description": "Data adapter foundations for Laravel and Inertia applications.",
     "keywords": [
         "laravel",
         "artisan-toolbox",
-        "dapter"
+        "dapter",
+        "inertia",
+        "pagination",
+        "filtering"
     ],
     "homepage": "https://github.com/artisan-toolbox/dapter",
     "license": "MIT",
@@ -17,18 +20,25 @@
         }
     ],
     "require": {
-        "php": "^8.3",
-        "illuminate/support": "^12.0||^13.0"
+        "php": "^8.5",
+        "artisan-toolbox/maintainer": "^1.10.0",
+        "illuminate/support": "^13.0",
+        "inertiajs/inertia-laravel": "^3.0"
     },
     "require-dev": {
+        "driftingly/rector-laravel": "^2.7.3",
         "larastan/larastan": "^3.9",
-        "laravel/pint": "^1.29",
         "laravel/pao": "^1.0",
-        "orchestra/testbench": "^10.0||^11.0",
-        "pestphp/pest": "^4.6||^5.0",
-        "pestphp/pest-plugin-laravel": "^4.1||^5.0",
-        "pestphp/pest-plugin-type-coverage": "^4.0||^5.0",
-        "phpstan/extension-installer": "^1.4"
+        "laravel/pint": "^1.29",
+        "orchestra/testbench": "^11.0",
+        "pestphp/pest": "^5.0",
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "pestphp/pest-plugin-phpstan": "^5.3",
+        "pestphp/pest-plugin-type-coverage": "^5.1",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.3.5",
+        "phpstan/phpstan-mockery": "^2.0",
+        "rector/rector": "^2.8.4"
     },
     "autoload": {
         "psr-4": {
@@ -60,19 +70,19 @@
             "@php vendor/bin/testbench serve --ansi"
         ],
         "lint": [
-            "vendor/bin/pint --parallel"
+            "@php vendor/bin/pint --parallel"
         ],
         "lint:check": [
-            "vendor/bin/pint --parallel --test"
+            "@php vendor/bin/pint --parallel --test"
         ],
         "analyse": [
-            "vendor/bin/phpstan analyse"
+            "@php vendor/bin/phpstan analyse"
         ],
         "test:types": [
-            "vendor/bin/pest --type-coverage --min=100"
+            "@php vendor/bin/pest --type-coverage --min=100"
         ],
         "test:unit": [
-            "vendor/bin/pest --parallel"
+            "@php vendor/bin/pest"
         ],
         "test": [
             "@analyse",
@@ -82,6 +92,18 @@
         ],
         "clear": [
             "@php vendor/bin/testbench package:purge-skeleton --ansi"
+        ],
+        "quality:check": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php vendor/bin/maintainer quality:check --no-interaction"
+        ],
+        "quality:fix": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php vendor/bin/maintainer quality:fix --no-interaction"
+        ],
+        "distribution:check": [
+            "@composer archive --format=zip --dir=build/distribution --file=dapter-preview",
+            "@php scripts/check-composer-distribution.php"
         ]
     },
     "extra": {

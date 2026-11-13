@@ -3,8 +3,7 @@ name: tests
 on:
   push:
     branches:
-      - main
-      - '*.x'
+      - 1.x
   pull_request:
 
 permissions:
@@ -19,15 +18,13 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        php: [8.3, 8.4, 8.5]
-        laravel: [12.*, 13.*]
+        php: [8.5]
+        laravel: [13.*]
         stability: [prefer-lowest, prefer-stable]
         include:
-          - laravel: 12.*
-            testbench: 10.*
           - laravel: 13.*
             testbench: 11.*
 
@@ -48,24 +45,41 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
+          composer require --dev "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress --no-scripts
           composer run prepare
 
-      - name: PHPStan
-        run: composer analyse
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
 
-      - name: Linter
-        run: composer lint:check
+      - name: Install frontend dependencies
+        run: npm ci
 
-      - name: Type Coverage
-        if: runner.os != 'Windows'
+      - name: Install lowest supported direct frontend dependencies
+        if: matrix.stability == 'prefer-lowest'
+        run: npm install --no-save --package-lock=false --ignore-scripts @types/node@24.13.3 typescript@5.8.3 vite-plus@1.6.0 vue-tsc@3.3.14 @inertiajs/vue3@3.0.0 @vitejs/plugin-vue@6.0.0 vue@3.5.13 vite@npm:@voidzero-dev/vite-plus-core@1.6.0
+
+      - name: Run configured quality checks
+        run: php vendor/bin/maintainer quality:check --no-interaction
+
+      - name: Verify PHP type coverage
         run: composer test:types
 
-      - name: Test Suite
-        if: runner.os != 'Windows'
-        run: composer test:unit
+      - name: Verify frontend type tests
+        run: npm run test:types
 
-      - name: Test Suite (Windows)
-        if: runner.os == 'Windows'
-        run: vendor/bin/pest
+      - name: Build and verify the library distribution
+        run: |
+          npm run build
+          npm run build:consumer
+          npm run check:dist
+
+      - name: Verify the Composer distribution
+        run: composer distribution:check
+
+      - name: Verify contributor standards
+        run: npm run standards:check

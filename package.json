@@ -1,0 +1,73 @@
+{
+  "$schema": "https://www.schemastore.org/package.json",
+  "name": "@artisan-toolbox/dapter",
+  "version": "1.0.0-alpha.1",
+  "private": true,
+  "description": "Data adapter foundations for Laravel and Inertia applications.",
+  "keywords": [
+    "artisan-toolbox",
+    "dapter",
+    "inertia",
+    "laravel"
+  ],
+  "homepage": "https://atb.dev.br/packages/dapter/",
+  "license": "MIT",
+  "author": "Allan Mariucci Carvalho",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/artisan-toolbox/dapter.git"
+  },
+  "files": [
+    "dist",
+    "resources/js",
+    "LICENSE.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "module": "./resources/js/index.ts",
+  "types": "./resources/js/index.ts",
+  "exports": {
+    ".": {
+      "types": "./resources/js/index.ts",
+      "import": "./resources/js/index.ts"
+    },
+    "./package.json": "./package.json",
+    "./dist": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "check": "vp check && npm run typecheck",
+    "check:fix": "vp check --fix",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "fmt:check": "vp fmt --check",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vp test run",
+    "test:types": "vp test run --typecheck.only",
+    "check:dist": "node scripts/check-distribution.mjs",
+    "release:build": "npm run check && npm test && npm run test:types && npm run build && npm run build:consumer && npm run check:dist",
+    "standards:check": "node .ai/sync.mjs --check",
+    "build:consumer": "vp build --config tests/frontend/consumer/vite.config.ts"
+  },
+  "devDependencies": {
+    "@inertiajs/vue3": "^3.0.0",
+    "@types/node": "^24.13.3",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "typescript": "^5.8.3",
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0",
+    "vite-plus": "1.6.0",
+    "vue": "^3.5.13",
+    "vue-tsc": "^3.3.14"
+  },
+  "overrides": {
+    "vite": "$vite"
+  },
+  "engines": {
+    "node": ">=24.11.0"
+  },
+  "packageManager": "npm@11.17.0"
+}
