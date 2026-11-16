@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import vue from '@vitejs/plugin-vue';
-import { createServer, loadConfigFromFile } from 'vite';
+import { createServer, loadConfigFromFile, normalizePath } from 'vite';
 
 export async function checkDevelopment(consumerRoot, packageRoot) {
     const loaded = await loadConfigFromFile(
@@ -29,6 +29,11 @@ export async function checkDevelopment(consumerRoot, packageRoot) {
         server: { host: '127.0.0.1', port: 0, hmr: false },
     });
     try {
+        assert.equal(
+            normalizePath(consumerRoot),
+            server.config.root,
+            'The packed consumer must give Vite a canonical project root.',
+        );
         await server.listen();
         const base = server.resolvedUrls?.local[0];
         assert.ok(base, 'The native Vite development server must listen locally.');

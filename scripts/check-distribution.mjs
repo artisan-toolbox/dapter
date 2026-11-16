@@ -1,27 +1,33 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { checkDevelopment } from './check-development.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const temporary = await mkdtemp(join(tmpdir(), 'dapter-consumer-'));
+const fixture = await mkdtemp(join(tmpdir(), 'dapter-consumer-'));
 const npm = process.env.npm_execpath;
-assert.ok(npm, 'Run this check through npm run check:dist.');
-
-function run(command, args, cwd = temporary) {
-    const result = spawnSync(command, args, {
-        cwd,
-        encoding: 'utf8',
-    });
-    assert.ifError(result.error);
-    assert.equal(result.status, 0, result.stdout + result.stderr);
-    return result.stdout;
-}
 
 try {
+    assert.ok(npm, 'Run this check through npm run check:dist.');
+    const application = join(fixture, 'application');
+    await mkdir(application);
+    const alias = join(fixture, 'TEMP~1');
+    await symlink(application, alias, process.platform === 'win32' ? 'junction' : 'dir');
+    const temporary = await realpath(alias);
+
+    function run(command, args, cwd = temporary) {
+        const result = spawnSync(command, args, {
+            cwd,
+            encoding: 'utf8',
+        });
+        assert.ifError(result.error);
+        assert.equal(result.status, 0, result.stdout + result.stderr);
+        return result.stdout;
+    }
+
     const metadata = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
     const built = await import(pathToFileURL(join(root, 'dist/index.js')).href);
     assert.deepEqual(Object.keys(built).sort(), ['DataAdapter', 'useDataAdapter', 'version']);
@@ -244,5 +250,5 @@ void inspect; void unsupported; void invalid; void inferred; void unknownInferre
         'Verified the npm archive, runtime peers, DataAdapter ESM import, and source and built consumer types with Bundler and NodeNext resolution.',
     );
 } finally {
-    await rm(temporary, { recursive: true, force: true });
+    await rm(fixture, { recursive: true, force: true });
 }

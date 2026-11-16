@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Resolve the packed consumer's real filesystem path before starting Vite so Windows temporary-directory aliases do not trigger its short-path restriction. Exercise a directory alias and verify the Vite root in the distribution check.
+
 - Read raw console input before validating the data source name so current Larastan and PHPStan analysis preserves rejection of non-string programmatic arguments. Register the provider explicitly in Testbench so command analysis also works with cold discovery manifests, and give Composer analysis the same 2G memory limit as Maintainer. Keep missing-name and dotted-name validation unchanged.
 
 - Require Inertia Vue and Core 3.0.3 or later within 3.x for the adapter's HTTP exception callback, and Vue 3.5.40 or later within 3.x for public props and shared slot handle identity. Exercise all minimum peers in the lowest dependency lane. Allow packed-consumer checks to resolve peers from the npm registry with an empty cache, and verify published configuration contents without platform-specific path comparisons.
