@@ -20,6 +20,7 @@
   "files": [
     "dist",
     "resources/js",
+    "resources/contracts/read-v1.json",
     "LICENSE.md"
   ],
   "type": "module",
@@ -35,7 +36,8 @@
     "./dist": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    }
+    },
+    "./contracts/read-v1.json": "./resources/contracts/read-v1.json"
   },
   "scripts": {
     "build": "vp pack",
@@ -54,6 +56,7 @@
     "build:consumer": "vp build --config tests/frontend/consumer/vite.config.ts"
   },
   "devDependencies": {
+    "@inertiajs/core": "^3.0.0",
     "@inertiajs/vue3": "^3.0.0",
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.0",
@@ -61,7 +64,14 @@
     "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0",
     "vite-plus": "1.6.0",
     "vue": "^3.5.13",
-    "vue-tsc": "^3.3.14"
+    "vue-tsc": "^3.3.14",
+    "ziggy-js": "^2.6.5"
+  },
+  "peerDependencies": {
+    "@inertiajs/core": "^3.0.0",
+    "@inertiajs/vue3": "^3.0.0",
+    "vue": "^3.5.13",
+    "ziggy-js": "^2.6.5"
   },
   "overrides": {
     "vite": "$vite"

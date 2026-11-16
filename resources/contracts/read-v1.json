@@ -1,0 +1,3668 @@
+{
+  "version": 1,
+  "fixture": {
+    "rows": [
+      {
+        "id": 1,
+        "name": "Protocol compass",
+        "values": {
+          "empty_object": {},
+          "empty_list": [],
+          "null": null,
+          "false": false,
+          "zero": 0,
+          "text_zero": "0",
+          "decimal": 1.5,
+          "space": "  value  "
+        }
+      },
+      {
+        "id": 2,
+        "name": "Protocol lantern",
+        "values": {
+          "safe_integer": 9007199254740991,
+          "negative": -2,
+          "decimal": 0.25
+        }
+      },
+      {
+        "id": 3,
+        "name": "Protocol map",
+        "values": {
+          "list": [{}, [], null, false, 0, "0", 2.75]
+        }
+      }
+    ],
+    "per_page": 2,
+    "per_page_options": [2, 3]
+  },
+  "requests": [
+    {
+      "id": "defaults",
+      "context": "public",
+      "request_json": "{\"version\":1}",
+      "status": 200,
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      },
+      "reads": 1
+    },
+    {
+      "id": "explicit-state",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":2}}}",
+      "status": 200,
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      },
+      "reads": 1
+    },
+    {
+      "id": "last-page",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":2,\"per_page\":2}}}",
+      "status": 200,
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 3,
+            "name": "Protocol map",
+            "values": {
+              "list": [{}, [], null, false, 0, "0", 2.75]
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 2,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 2,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 2,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": true,
+          "has_next": false
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      },
+      "reads": 1
+    },
+    {
+      "id": "page-999",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":999,\"per_page\":2}}}",
+      "status": 200,
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 3,
+            "name": "Protocol map",
+            "values": {
+              "list": [{}, [], null, false, 0, "0", 2.75]
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 2,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 2,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 2,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": true,
+          "has_next": false
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      },
+      "reads": 1
+    },
+    {
+      "id": "clamped-page",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":9007199254740991,\"per_page\":2}}}",
+      "status": 200,
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 3,
+            "name": "Protocol map",
+            "values": {
+              "list": [{}, [], null, false, 0, "0", 2.75]
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 2,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 2,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 2,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": true,
+          "has_next": false
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      },
+      "reads": 1
+    },
+    {
+      "id": "selected-size",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":3}}}",
+      "status": 200,
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          },
+          {
+            "id": 3,
+            "name": "Protocol map",
+            "values": {
+              "list": [{}, [], null, false, 0, "0", 2.75]
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 3
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 3
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 3,
+          "pages": 1,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": false
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      },
+      "reads": 1
+    },
+    {
+      "id": "empty-source",
+      "context": "empty",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":999,\"per_page\":2}}}",
+      "status": 200,
+      "response": {
+        "version": 1,
+        "data": [],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 1,
+          "total": 0,
+          "filtered": 0,
+          "has_previous": false,
+          "has_next": false
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      },
+      "reads": 1
+    },
+    {
+      "id": "null-envelope",
+      "context": "public",
+      "request_json": "null",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "list-envelope",
+      "context": "public",
+      "request_json": "[]",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "missing-version",
+      "context": "public",
+      "request_json": "{}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "future-version",
+      "context": "public",
+      "request_json": "{\"version\":2}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "decimal-version",
+      "context": "public",
+      "request_json": "{\"version\":1.0}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "extra-envelope-key",
+      "context": "public",
+      "request_json": "{\"version\":1,\"extra\":true}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "null-state",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":null}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "list-state",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":[]}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "future-state-version",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":2,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "list-fields",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":[],\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "list-global",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":[],\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "invalid-size",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":7}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "zero-page",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":0,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "string-page",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":\"1\",\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "unsafe-page",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":9007199254740992,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "unsafe-nested-number",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{\"value\":{\"operand\":9007199254740992}},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "decimal-page",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1.0,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "field-filter",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{\"name\":{\"filter\":\"Protocol\"}},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "field-search",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{\"name\":{\"search\":\"Protocol\"}},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "field-order",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{\"name\":{\"order\":\"asc\"}},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "global-filter",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{\"filters\":{\"active\":true}},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "global-search",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{\"search\":\"Protocol\"},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "global-order",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"preset\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "unsupported-match",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"any\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "cursor-mode",
+      "context": "public",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"cursor\",\"current\":1,\"per_page\":2}}}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "malformed-json",
+      "context": "public",
+      "request_json": "{",
+      "status": 400,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "malformed_json",
+          "message": "The data request could not be completed."
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "access-before-source-intent",
+      "context": "required",
+      "request_json": "{\"version\":1,\"state\":{\"version\":1,\"fields\":{},\"global\":{},\"searchMatch\":\"all\",\"order\":{\"kind\":\"default\"},\"paging\":{\"mode\":\"offset\",\"current\":1,\"per_page\":7}}}",
+      "status": 401,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "access",
+          "code": "authentication_required",
+          "message": "The data request could not be completed."
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "missing-source",
+      "context": "missing",
+      "request_json": "{\"version\":1}",
+      "status": 404,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "access",
+          "code": "source_not_found",
+          "message": "The data request could not be completed."
+        }
+      },
+      "reads": 0
+    },
+    {
+      "id": "server-failure",
+      "context": "server",
+      "request_json": "{\"version\":1}",
+      "status": 500,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": "The data request could not be completed."
+        }
+      },
+      "reads": 1
+    },
+    {
+      "id": "trusted-server-422",
+      "context": "custom422",
+      "request_json": "{\"version\":1}",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "custom/source:unavailable",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["server"]
+        }
+      },
+      "reads": 1
+    }
+  ],
+  "successes": [
+    {
+      "id": "defaults",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "explicit-state",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "last-page",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 3,
+            "name": "Protocol map",
+            "values": {
+              "list": [{}, [], null, false, 0, "0", 2.75]
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 2,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 2,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 2,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": true,
+          "has_next": false
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "page-999",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 3,
+            "name": "Protocol map",
+            "values": {
+              "list": [{}, [], null, false, 0, "0", 2.75]
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 2,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 2,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 2,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": true,
+          "has_next": false
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "clamped-page",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 3,
+            "name": "Protocol map",
+            "values": {
+              "list": [{}, [], null, false, 0, "0", 2.75]
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 2,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 2,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 2,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": true,
+          "has_next": false
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "selected-size",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          },
+          {
+            "id": 3,
+            "name": "Protocol map",
+            "values": {
+              "list": [{}, [], null, false, 0, "0", 2.75]
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 3
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 3
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 3,
+          "pages": 1,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": false
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "empty-source",
+      "response": {
+        "version": 1,
+        "data": [],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 1,
+          "total": 0,
+          "filtered": 0,
+          "has_previous": false,
+          "has_next": false
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    }
+  ],
+  "failures": [
+    {
+      "id": "null-envelope",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "list-envelope",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "missing-version",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "future-version",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "decimal-version",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "extra-envelope-key",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "null-state",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "list-state",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "future-state-version",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "list-fields",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "list-global",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "invalid-size",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "zero-page",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "string-page",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "unsafe-page",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "unsafe-nested-number",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "decimal-page",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "invalid_request",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["validation"]
+        }
+      }
+    },
+    {
+      "id": "field-filter",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      }
+    },
+    {
+      "id": "field-search",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      }
+    },
+    {
+      "id": "field-order",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      }
+    },
+    {
+      "id": "global-filter",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      }
+    },
+    {
+      "id": "global-search",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      }
+    },
+    {
+      "id": "global-order",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      }
+    },
+    {
+      "id": "unsupported-match",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      }
+    },
+    {
+      "id": "cursor-mode",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "unsupported_operation",
+          "code": "unsupported_operation",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["unsupported_operation"]
+        }
+      }
+    },
+    {
+      "id": "malformed-json",
+      "status": 400,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "validation",
+          "code": "malformed_json",
+          "message": "The data request could not be completed."
+        }
+      }
+    },
+    {
+      "id": "access-before-source-intent",
+      "status": 401,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "access",
+          "code": "authentication_required",
+          "message": "The data request could not be completed."
+        }
+      }
+    },
+    {
+      "id": "missing-source",
+      "status": 404,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "access",
+          "code": "source_not_found",
+          "message": "The data request could not be completed."
+        }
+      }
+    },
+    {
+      "id": "server-failure",
+      "status": 500,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": "The data request could not be completed."
+        }
+      }
+    },
+    {
+      "id": "trusted-server-422",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "custom/source:unavailable",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["server"]
+        }
+      }
+    },
+    {
+      "id": "access-503",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "access",
+          "code": "custom:opaque/code",
+          "message": "The data request could not be completed."
+        }
+      }
+    },
+    {
+      "id": "access-422",
+      "status": 422,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "access",
+          "code": "custom:opaque/code",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["access"]
+        }
+      }
+    },
+    {
+      "id": "server-503",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "custom:opaque/code",
+          "message": "The data request could not be completed."
+        }
+      }
+    }
+  ],
+  "invalid_successes": [
+    {
+      "id": "future-version",
+      "response": {
+        "version": 2,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "missing-key",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "extra-key",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        },
+        "extra": true
+      }
+    },
+    {
+      "id": "list-fields",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": [],
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "null-global",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": null,
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "wrong-default-order",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "wrong-accepted-order",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "noncanonical-ack",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 999,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "bad-pages",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 4,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "unsafe-total",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 9007199254740992,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "wrong-next",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": false
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "extra-row",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          },
+          {
+            "id": 3,
+            "name": "Protocol map",
+            "values": {
+              "list": [{}, [], null, false, 0, "0", 2.75]
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "unsafe-nested-row",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 9007199254740992,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "duplicate-sizes",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [2, 2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "missing-default-size",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 5,
+            "per_page_options": [2, 3]
+          }
+        }
+      }
+    },
+    {
+      "id": "missing-active-size",
+      "response": {
+        "version": 1,
+        "data": [
+          {
+            "id": 1,
+            "name": "Protocol compass",
+            "values": {
+              "empty_object": {},
+              "empty_list": [],
+              "null": null,
+              "false": false,
+              "zero": 0,
+              "text_zero": "0",
+              "decimal": 1.5,
+              "space": "  value  "
+            }
+          },
+          {
+            "id": 2,
+            "name": "Protocol lantern",
+            "values": {
+              "safe_integer": 9007199254740991,
+              "negative": -2,
+              "decimal": 0.25
+            }
+          }
+        ],
+        "requested": {
+          "version": 1,
+          "fields": {},
+          "global": {},
+          "searchMatch": "all",
+          "order": {
+            "kind": "default"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "state": {
+          "order": {
+            "kind": "source"
+          },
+          "paging": {
+            "mode": "offset",
+            "current": 1,
+            "per_page": 2
+          }
+        },
+        "paging": {
+          "mode": "offset",
+          "current": 1,
+          "per_page": 2,
+          "pages": 2,
+          "total": 3,
+          "filtered": 3,
+          "has_previous": false,
+          "has_next": true
+        },
+        "capabilities": {
+          "fields": {},
+          "global": {
+            "multi_order": false,
+            "multi_order_limit": 1,
+            "searchMatch": {
+              "default": "all",
+              "allowed": ["all"]
+            },
+            "filters": null,
+            "search": null,
+            "order": null
+          },
+          "paging": {
+            "mode": "offset",
+            "per_page": 2,
+            "per_page_options": [3]
+          }
+        }
+      }
+    }
+  ],
+  "invalid_failures": [
+    {
+      "id": "extra-envelope-key",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": "The data request could not be completed."
+        },
+        "extra": true
+      }
+    },
+    {
+      "id": "list-errors",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": "The data request could not be completed."
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "null-errors",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": "The data request could not be completed."
+        },
+        "errors": null
+      }
+    },
+    {
+      "id": "contradictory-marker",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["access"]
+        }
+      }
+    },
+    {
+      "id": "unknown-marker",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["future"]
+        }
+      }
+    },
+    {
+      "id": "multiple-markers",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["server", "server"]
+        }
+      }
+    },
+    {
+      "id": "extra-errors-key",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": ["server"],
+          "other": ["x"]
+        }
+      }
+    },
+    {
+      "id": "missing-marker",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": "The data request could not be completed."
+        },
+        "errors": {}
+      }
+    },
+    {
+      "id": "scalar-marker",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": "The data request could not be completed."
+        },
+        "errors": {
+          "_dapter_kind": "server"
+        }
+      }
+    },
+    {
+      "id": "future-version",
+      "status": 503,
+      "response": {
+        "version": 2,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": "The data request could not be completed."
+        }
+      }
+    },
+    {
+      "id": "missing-error",
+      "status": 503,
+      "response": {
+        "version": 1
+      }
+    },
+    {
+      "id": "extra-error-key",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": "The data request could not be completed.",
+          "extra": true
+        }
+      }
+    },
+    {
+      "id": "unknown-kind",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "future",
+          "code": "invalid_source",
+          "message": "The data request could not be completed."
+        }
+      }
+    },
+    {
+      "id": "empty-code",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "",
+          "message": "The data request could not be completed."
+        }
+      }
+    },
+    {
+      "id": "empty-message",
+      "status": 503,
+      "response": {
+        "version": 1,
+        "error": {
+          "kind": "server",
+          "code": "invalid_source",
+          "message": ""
+        }
+      }
+    },
+    {
+      "id": "list-envelope",
+      "status": 503,
+      "response": []
+    },
+    {
+      "id": "unknown-419",
+      "status": 419,
+      "response": {
+        "message": "Page expired."
+      }
+    }
+  ]
+}

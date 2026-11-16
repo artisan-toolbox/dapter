@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use ArtisanToolbox\Dapter\EloquentDataSource;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use LogicException;
+
+/** @extends EloquentDataSource<Model> */
+final class {{ class }} extends EloquentDataSource
+{
+    /** @return Builder<Model> */
+    public function source(): Builder
+    {
+        throw new LogicException('Implement source() with your application model query before reading this source.');
+    }
+}

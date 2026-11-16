@@ -21,6 +21,7 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
 
 ## Local Skills
 
+- `dapter-implementation`: use [.ai/skills/dapter-implementation/SKILL.md](.ai/skills/dapter-implementation/SKILL.md) for every Dapter implementation change. Each delivered option, configuration key, attribute, factory mode, command option, and frontend prop requires a functional public-API demo and behavioral verification in `docs`. Prefer public Front Awesome components in those examples wherever their APIs fit.
 - `package-scaffold`: use when adding package capabilities or wiring them through the service provider, including commands, migrations, routes, config, views, translations, assets, middleware, publish tags, workbench files, and console-only behavior.
 - `package-testing`: use when adding or changing package tests with Pest 4/5 and Orchestra Testbench.
 - `package-release`: use when preparing changelog, release notes, tags, or GitHub release workflow changes.
@@ -38,5 +39,5 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
 - Run `composer quality:check` for the configured Maintainer checks, and `npm run standards:check` for the installed contributor standards. Synchronize generated `.ai` and `.agents` copies through `.ai/sync.mjs`.
 - `Dapter` implements `Versionable` and `WithReadmeHead`. Keep `Dapter::VERSION` aligned with `package.json`, and run `php vendor/bin/maintainer readme:update --no-interaction` after editing its header metadata.
 - Use `1.x` for development and changelog automation. The CI matrix covers PHP 8.5, Laravel 13, Ubuntu, and Windows in lowest and stable dependency lanes.
-- The current preview contains package identity and tooling. Do not describe filtering, search, sorting, pagination, or Vue composables as implemented.
+- Keep preview capability claims aligned with the implemented public APIs, package tests, and working docs demos. Planned roadmap features remain unavailable until their delivery gates pass.
 - Maintain SVG artwork with `scripts/build-logos.py`. The workspace Font Awesome export registry owns the duotone conversion. Do not claim the custom icon is published before its manual kit upload.

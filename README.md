@@ -17,7 +17,7 @@
 </p>
 <!-- MAINTAINER:README_HEAD:END -->
 
-Dapter provides data adapter foundations for Laravel and Inertia applications. This unreleased preview contains package identity and development tooling. Filtering, searching, sorting, and pagination APIs are not implemented yet.
+Dapter reads and paginates server-owned data through a headless Vue adapter. This unpublished local preview supports Collections and ordinary SQLite Eloquent queries, offset paging, typed options, PHP attributes, and guard and Gate access checks.
 
 ## Installation
 
@@ -26,22 +26,48 @@ For the local preview, place this checkout beside your Laravel application. From
 ```bash
 composer config repositories.dapter path ../dapter
 composer require artisan-toolbox/dapter:"1.x-dev@dev"
-npm install --install-links ./vendor/artisan-toolbox/dapter
+npm pkg set 'dependencies.@artisan-toolbox/dapter=file:vendor/artisan-toolbox/dapter'
+npm install --install-links
 ```
 
 ## Usage
 
 ```php
-use ArtisanToolbox\Dapter\Dapter;
+namespace App\DataSources;
 
-dump(Dapter::VERSION); // "1.0.0-alpha.1"
+use ArtisanToolbox\Dapter\Attributes\PublicAccess;
+use ArtisanToolbox\Dapter\CollectionDataSource;
+
+#[PublicAccess]
+final class Products extends CollectionDataSource
+{
+    /** @return list<array{name: string}> */
+    public function source(): array
+    {
+        return [['name' => 'Notebook'], ['name' => 'Pencil']];
+    }
+}
 ```
 
-The frontend entry also exports `version` for checking the installed package identity.
+Expose the package route `dapter.data` through Ziggy, keep Laravel's web session and CSRF integration, and render the source in an existing Inertia page:
+
+```vue
+<script setup>
+import { DataAdapter } from '@artisan-toolbox/dapter';
+</script>
+
+<template>
+    <DataAdapter source="Products" v-slot="adapter">
+        <pre v-if="adapter.ready">{{ adapter.data }}</pre>
+    </DataAdapter>
+</template>
+```
+
+After loading, the slot contains the two records. The public attribute is explicit for this fictional catalog; authentication is required by default. Run the [functional examples](https://atb.dev.br/docs/dapter/listing) for paging, configuration, and access behavior.
 
 ## Compatibility
 
-PHP ^8.5, Laravel ^13.0, and Inertia Laravel ^3.0. Frontend development requires Node.js >=24.11.0. The preview uses the `1.x` branch and has no stable release.
+PHP ^8.5, Laravel ^13.0, Inertia 3, Vue 3.5, Ziggy ^2.6.5, and Node.js >=24.11.0 for frontend tooling. The source entry needs Vue-aware Vite and TypeScript tooling, plus `optimizeDeps.exclude` for `@artisan-toolbox/dapter` during development. Follow the [installation guide](https://atb.dev.br/docs/dapter/installation) for the consuming application's Vite configuration. Search, filters, selectable ordering, MySQL, PostgreSQL, URL persistence, scrolling, and live updates remain planned. The preview uses `1.x` and has no stable release.
 
 ## Documentation and policies
 

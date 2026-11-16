@@ -6,6 +6,7 @@ use Rector\Config\RectorConfig;
 use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
 use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
 use Rector\TypeDeclaration\Rector\Closure\AddClosureVoidReturnTypeWhereNoReturnRector;
+use RectorLaravel\Rector\Class_\AddHasFactoryToModelsRector;
 use RectorLaravel\Rector\ClassMethod\AddGenericReturnTypeToRelationsRector;
 use RectorLaravel\Rector\FuncCall\RemoveDumpDataDeadCodeRector;
 use RectorLaravel\Rector\MethodCall\WhereToWhereLikeRector;
@@ -32,6 +33,7 @@ return RectorConfig::configure()
         RemoveDumpDataDeadCodeRector::class,
     ])
     ->withSkip([
+        AddHasFactoryToModelsRector::class => [__DIR__.'/tests/Fixtures/ListingSources.php'],
         ArrayToFirstClassCallableRector::class,
         AddClosureVoidReturnTypeWhereNoReturnRector::class,
         AddGenericReturnTypeToRelationsRector::class,
