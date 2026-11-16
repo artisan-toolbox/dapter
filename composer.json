@@ -76,7 +76,7 @@
             "@php vendor/bin/pint --parallel --test"
         ],
         "analyse": [
-            "@php vendor/bin/phpstan analyse"
+            "@php vendor/bin/phpstan analyse --memory-limit=2G"
         ],
         "test:types": [
             "@php vendor/bin/pest --type-coverage --min=100"

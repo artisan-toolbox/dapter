@@ -10,6 +10,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use Symfony\Component\Console\Exception\RuntimeException;
 
 require_once __DIR__.'/../Fixtures/ListingSources.php';
 
@@ -80,6 +81,28 @@ it('generates an Eloquent scaffold requiring an application-owned model', functi
 it('rejects source names outside the conventional namespace', function (string $name) {
     expect(\Orchestra\Testbench\artisan($this, 'make:datasource', ['name' => $name]))->toBe(1);
 })->with(['../Products', 'Catalog..Products', 'App\\DataSources\\Products', '/Products', 'Products/Other', '', 'Class', 'int']);
+
+it('rejects non-string source names from programmatic command calls without creating files', function (mixed $name) {
+    $files = File::allFiles(app_path());
+
+    expect(\Orchestra\Testbench\artisan($this, 'make:datasource', ['name' => $name]))->toBe(1);
+    expect(File::allFiles(app_path()))->toHaveCount(count($files));
+})->with([
+    'null' => [null],
+    'true' => [true],
+    'false' => [false],
+    'integer' => [123],
+    'float' => [1.5],
+    'array' => [['Products']],
+]);
+
+it('requires a source name before generating files', function () {
+    $files = File::allFiles(app_path());
+
+    expect(fn () => \Orchestra\Testbench\artisan($this, 'make:datasource'))
+        ->toThrow(RuntimeException::class, 'Not enough arguments (missing: "name").');
+    expect(File::allFiles(app_path()))->toHaveCount(count($files));
+});
 
 it('constructs a fresh source even when the application binds it as a singleton', function () {
     FreshRecords::$constructed = 0;

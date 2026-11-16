@@ -17,7 +17,7 @@ final class MakeDataSource extends Command
 {
     public function handle(Filesystem $files): int
     {
-        $name = $this->argument('name');
+        $name = $this->input->getArgument('name');
 
         if (! is_string($name)) {
             return self::FAILURE;
