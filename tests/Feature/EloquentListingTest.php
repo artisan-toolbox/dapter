@@ -13,7 +13,11 @@ use ArtisanToolbox\Dapter\Http\DapterException;
 use ArtisanToolbox\Dapter\Http\OffsetRequest;
 use ArtisanToolbox\Dapter\Options\OptionsResolver;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -105,6 +109,74 @@ it('rejects scope-added windows without executing count or page reads', function
     DB::enableQueryLog();
     $this->postJson('/dapter/data/SqlRecords', ['version' => 1])->assertStatus(500)->assertJsonPath('error.kind', 'server');
     expect(DB::getQueryLog())->toBe([]);
+});
+
+it('rejects deferred query callbacks without invoking them or executing listing SQL', function () {
+    $calls = 0;
+    $query = FixtureRecord::query();
+    $query->getQuery()->beforeQuery(static function (QueryBuilder $query) use (&$calls): void {
+        $calls++;
+        $query->limit(1);
+    });
+    SqlRecords::$builder = $query;
+    DB::enableQueryLog();
+
+    $this->postJson('/dapter/data/SqlRecords', ['version' => 1])->assertStatus(500)
+        ->assertExactJson(['version' => 1, 'error' => ['kind' => 'server', 'code' => 'invalid_source', 'message' => 'The data request could not be completed.']]);
+
+    expect((new EloquentStoreDriver($query))->capabilities()->offset)->toBeFalse()
+        ->and($calls)->toBe(0)->and(DB::getQueryLog())->toBe([])
+        ->and($query->getQuery()->beforeQueryCallbacks)->toHaveCount(1)
+        ->and($query->getQuery()->orders)->toBeNull()
+        ->and($query->getQuery()->limit)->toBeNull()->and($query->getQuery()->offset)->toBeNull();
+});
+
+it('rejects result callbacks that change the bounded page cardinality', function (string $change) {
+    $query = FixtureRecord::query()->afterQuery(static fn (Collection $rows): Collection => $change === 'drop' ? $rows->take(1) : $rows->concat($rows));
+    SqlRecords::$builder = $query;
+    DB::enableQueryLog();
+
+    $this->postJson('/dapter/data/SqlRecords', ['version' => 1])->assertStatus(500)
+        ->assertExactJson(['version' => 1, 'error' => ['kind' => 'server', 'code' => 'invalid_source', 'message' => 'The data request could not be completed.']]);
+
+    expect((new EloquentStoreDriver($query))->capabilities()->offset)->toBeTrue()
+        ->and($query->getQuery()->orders)->toBeNull()
+        ->and($query->getQuery()->limit)->toBeNull()->and($query->getQuery()->offset)->toBeNull()
+        ->and(DB::getQueryLog())->toHaveCount(2);
+})->with(['drop', 'duplicate']);
+
+it('preserves result callbacks that project visible attributes without changing page counts', function () {
+    $query = FixtureRecord::query()->afterQuery(static fn (Collection $rows): Collection => $rows->each(static fn (Model $row): Model => $row->setVisible(['name'])));
+    SqlRecords::$builder = $query;
+    DB::enableQueryLog();
+
+    $this->postJson('/dapter/data/SqlRecords', ['version' => 1])->assertOk()
+        ->assertJsonPath('data', [['name' => 'Pencil'], ['name' => 'Outside'], ['name' => 'Notebook']])
+        ->assertJsonPath('paging.total', 3)->assertJsonPath('paging.filtered', 3)->assertJsonPath('paging.pages', 1);
+
+    expect($query->getQuery()->orders)->toBeNull()
+        ->and($query->getQuery()->limit)->toBeNull()->and($query->getQuery()->offset)->toBeNull()
+        ->and(DB::getQueryLog())->toHaveCount(2);
+});
+
+it('rejects a negative native count before reading page rows', function () {
+    $query = FixtureRecord::query()->whereKey(999);
+    $query->getQuery()->afterQuery(static function (SupportCollection $rows): SupportCollection {
+        foreach ($rows as $row) {
+            if (isset($row->aggregate)) {
+                $row->aggregate = -1;
+            }
+        }
+
+        return $rows;
+    });
+    SqlRecords::$builder = $query;
+    DB::enableQueryLog();
+
+    $this->postJson('/dapter/data/SqlRecords', ['version' => 1])->assertStatus(500)
+        ->assertExactJson(['version' => 1, 'error' => ['kind' => 'server', 'code' => 'invalid_source', 'message' => 'The data request could not be completed.']]);
+
+    expect(DB::getQueryLog())->toHaveCount(1);
 });
 
 it('rejects complex queries and other SQL dialects without executing them', function (string $shape) {

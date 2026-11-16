@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reject deferred Eloquent query callbacks before listing SQL and fail with a sanitized configuration error when result callbacks change the expected offset page size. Reject invalid native counts before reading page rows. Preserve callbacks that only project visible attributes.
+
 - Verify the current query defaults, exact empty-source counts, and deterministic SQLite offset boundaries. Settle proposed scalar comparison and filtered-count rules in the central documentation without changing runtime APIs.
 
 - Remove the unused factory trait from the Eloquent test fixture and skip only its automatic insertion rule for that file. Keep tests in Rector and PHPStan while preventing the fixer from reintroducing an undefined factory generic.

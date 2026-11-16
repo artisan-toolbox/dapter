@@ -40,12 +40,17 @@ final readonly class EloquentStoreDriver implements StoreDriver
         $scoped = $this->source;
         $total = (clone $scoped)->toBase()->getCountForPagination();
 
-        if ($total > 9007199254740991) {
+        if (filter_var($total, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 9007199254740991]]) === false) {
             throw DapterException::configuration();
         }
         $pages = max(1, (int) ceil($total / $plan->paging->perPage));
         $current = min($plan->paging->current, $pages);
-        $rows = (clone $scoped)->offset(($current - 1) * $plan->paging->perPage)->limit($plan->paging->perPage)->get()->all();
+        $offset = ($current - 1) * $plan->paging->perPage;
+        $rows = (clone $scoped)->offset($offset)->limit($plan->paging->perPage)->get()->all();
+
+        if (count($rows) !== min($plan->paging->perPage, max(0, $total - $offset))) {
+            throw DapterException::configuration();
+        }
 
         foreach ($rows as $row) {
             $identity = $row->getKey();
@@ -66,7 +71,7 @@ final readonly class EloquentStoreDriver implements StoreDriver
         $table = $model->getTable();
         $key = $model->getKeyName();
 
-        if (! $query->getConnection() instanceof Connection || $query->getConnection()->getDriverName() !== 'sqlite' || ! preg_match('/\A[A-Za-z_][A-Za-z_0-9]*\z/D', $table) || ! preg_match('/\A[A-Za-z_][A-Za-z_0-9]*\z/D', $key) || $query->from !== $table || $query->joins || $query->groups || $query->havings || $query->unions || $query->distinct || $query->limit !== null || $query->offset !== null || $query->aggregate !== null || $query->groupLimit !== null || $query->unionLimit !== null || $query->unionOffset !== null || $query->unionOrders || ($query->columns !== null && $query->columns !== ['*'] && $query->columns !== [$table.'.*'])) {
+        if (! $query->getConnection() instanceof Connection || $query->getConnection()->getDriverName() !== 'sqlite' || ! preg_match('/\A[A-Za-z_][A-Za-z_0-9]*\z/D', $table) || ! preg_match('/\A[A-Za-z_][A-Za-z_0-9]*\z/D', $key) || $query->from !== $table || $query->joins || $query->groups || $query->havings || $query->unions || $query->distinct || $query->limit !== null || $query->offset !== null || $query->aggregate !== null || $query->groupLimit !== null || $query->unionLimit !== null || $query->unionOffset !== null || $query->unionOrders || $query->beforeQueryCallbacks || ($query->columns !== null && $query->columns !== ['*'] && $query->columns !== [$table.'.*'])) {
             return false;
         }
         $qualifiedKey = $model->qualifyColumn($key);
