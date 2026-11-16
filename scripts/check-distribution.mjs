@@ -73,7 +73,6 @@ try {
     run(process.execPath, [
         npm,
         'install',
-        '--offline',
         '--ignore-scripts',
         '--strict-peer-deps',
         '--no-audit',

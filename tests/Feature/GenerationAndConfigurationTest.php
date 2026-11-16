@@ -10,7 +10,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\ServiceProvider;
 
 require_once __DIR__.'/../Fixtures/ListingSources.php';
 
@@ -20,12 +19,14 @@ it('registers the fixed web route and publishable cacheable defaults', function 
         ->and($route->methods())->toBe(['POST'])
         ->and($route->gatherMiddleware())->toBe(['web'])
         ->and(config('dapter.paging.mode'))->toBe(PagingMode::Offset)
-        ->and(config('dapter.access.guard'))->toBe('web')
-        ->and(ServiceProvider::pathsToPublish(group: 'dapter-config'))->toHaveKey(dirname(__DIR__, 2).'/src/../config/dapter.php');
-    expect(\Orchestra\Testbench\artisan($this, 'vendor:publish', ['--tag' => 'dapter-config']))->toBe(0);
-    expect(\Orchestra\Testbench\artisan($this, 'config:cache'))->toBe(0);
+        ->and(config('dapter.access.guard'))->toBe('web');
+    File::delete(config_path('dapter.php'));
 
     try {
+        expect(\Orchestra\Testbench\artisan($this, 'vendor:publish', ['--tag' => 'dapter-config']))->toBe(0);
+        expect(File::get(config_path('dapter.php')))->toBe(File::get(dirname(__DIR__, 2).'/config/dapter.php'));
+        expect(\Orchestra\Testbench\artisan($this, 'config:cache'))->toBe(0);
+
         $cached = require app()->getCachedConfigPath();
         expect($cached['dapter']['paging']['mode'])->toBe(PagingMode::Offset)
             ->and($cached['dapter']['paging']['per_page'])->toBe(10)

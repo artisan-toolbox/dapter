@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Require Inertia Vue and Core 3.0.3 or later within 3.x for the adapter's HTTP exception callback, and Vue 3.5.40 or later within 3.x for public props and shared slot handle identity. Exercise all minimum peers in the lowest dependency lane. Allow packed-consumer checks to resolve peers from the npm registry with an empty cache, and verify published configuration contents without platform-specific path comparisons.
+
 - Reject deferred Eloquent query callbacks before listing SQL and fail with a sanitized configuration error when result callbacks change the expected offset page size. Reject invalid native counts before reading page rows. Preserve callbacks that only project visible attributes.
 
 - Verify the current query defaults, exact empty-source counts, and deterministic SQLite offset boundaries. Settle proposed scalar comparison and filtered-count rules in the central documentation without changing runtime APIs.

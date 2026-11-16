@@ -67,7 +67,7 @@ After loading, the slot contains the two records. The public attribute is explic
 
 ## Compatibility
 
-PHP ^8.5, Laravel ^13.0, Inertia 3, Vue 3.5, Ziggy ^2.6.5, and Node.js >=24.11.0 for frontend tooling. The source entry needs Vue-aware Vite and TypeScript tooling, plus `optimizeDeps.exclude` for `@artisan-toolbox/dapter` during development. Follow the [installation guide](https://atb.dev.br/docs/dapter/installation) for the consuming application's Vite configuration. Search, filters, selectable ordering, MySQL, PostgreSQL, URL persistence, scrolling, and live updates remain planned. The preview uses `1.x` and has no stable release.
+PHP ^8.5, Laravel ^13.0, Inertia Laravel ^3.0, Inertia Vue and Core ^3.0.3, Vue ^3.5.40, Ziggy ^2.6.5, and Node.js >=24.11.0 for frontend tooling. The source entry needs Vue-aware Vite and TypeScript tooling, plus `optimizeDeps.exclude` for `@artisan-toolbox/dapter` during development. Follow the [installation guide](https://atb.dev.br/docs/dapter/installation) for the consuming application's Vite configuration. Search, filters, selectable ordering, MySQL, PostgreSQL, URL persistence, scrolling, and live updates remain planned. The preview uses `1.x` and has no stable release.
 
 ## Documentation and policies
 

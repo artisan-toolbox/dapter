@@ -61,7 +61,7 @@ jobs:
 
       - name: Install lowest supported direct frontend dependencies
         if: matrix.stability == 'prefer-lowest'
-        run: npm install --no-save --package-lock=false --ignore-scripts @types/node@24.13.3 typescript@5.8.3 vite-plus@1.6.0 vue-tsc@3.3.14 @inertiajs/vue3@3.0.0 @vitejs/plugin-vue@6.0.0 vue@3.5.13 vite@npm:@voidzero-dev/vite-plus-core@1.6.0
+        run: npm install --no-save --package-lock=false --ignore-scripts @types/node@24.13.3 typescript@5.8.3 vite-plus@1.6.0 vue-tsc@3.3.14 @inertiajs/core@3.0.3 @inertiajs/vue3@3.0.3 @vitejs/plugin-vue@6.0.0 vue@3.5.40 ziggy-js@2.6.5 vite@npm:@voidzero-dev/vite-plus-core@1.6.0
 
       - name: Run configured quality checks
         run: php vendor/bin/maintainer quality:check --no-interaction

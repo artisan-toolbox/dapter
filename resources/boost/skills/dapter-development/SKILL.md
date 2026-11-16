@@ -12,7 +12,7 @@ Dapter's unpublished local preview supports Collection and ordinary SQLite Eloqu
 
 ## Prerequisites
 
-Use PHP ^8.5, Laravel ^13.0, and Inertia Laravel ^3.0. The frontend requires Vue 3.5, Inertia Vue and Core 3, Ziggy ^2.6.5, Node.js >=24.11.0, and Vue-aware Vite and TypeScript tooling. There is no stable release.
+Use PHP ^8.5, Laravel ^13.0, and Inertia Laravel ^3.0. The frontend requires Vue ^3.5.40, Inertia Vue and Core ^3.0.3, Ziggy ^2.6.5, Node.js >=24.11.0, and Vue-aware Vite and TypeScript tooling. Inertia 3.0.3 supplies the HTTP exception callback used to classify failed reads. Vue 3.5.40 preserves the component's public props and shared slot handle identity. There is no stable release.
 
 ## Install a local preview
 
