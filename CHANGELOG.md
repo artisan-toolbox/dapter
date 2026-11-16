@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Verify the current query defaults, exact empty-source counts, and deterministic SQLite offset boundaries. Settle proposed scalar comparison and filtered-count rules in the central documentation without changing runtime APIs.
+
 - Remove the unused factory trait from the Eloquent test fixture and skip only its automatic insertion rule for that file. Keep tests in Rector and PHPStan while preventing the fixer from reintroducing an undefined factory generic.
 
 - Document and verify current source freshness, single evaluation, source-owned scope, top-level public Arrayable projection, and scalar Collection paging without row identity. Add a working fixed-scope documentation example while preserving the current read protocol and driver APIs.
