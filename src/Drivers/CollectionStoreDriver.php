@@ -394,12 +394,16 @@ final readonly class CollectionStoreDriver implements IdentityLookupDriver, Trav
             return false;
         }
 
-        if ($search->valueType === ValueType::String && $search->matchType !== MatchType::FullText) {
-            return (($comparisons ?? throw DapterException::configuration())->literal ?? throw DapterException::configuration())->matches((string) $value, (string) $search->value, $search->matchType);
+        if ($search->valueType === ValueType::String && ! in_array($search->matchType, [MatchType::FullText, MatchType::Vector], true)) {
+            if (! is_string($search->value)) {
+                throw DapterException::configuration();
+            }
+
+            return (($comparisons ?? throw DapterException::configuration())->literal ?? throw DapterException::configuration())->matches((string) $value, $search->value, $search->matchType);
         }
 
         return match ($search->matchType) {
-            MatchType::FullText => throw DapterException::unsupported(),
+            MatchType::FullText, MatchType::Vector => throw DapterException::unsupported(),
             MatchType::Equals => $value === $search->value,
             MatchType::Contains => is_string($value) && is_string($search->value) && str_contains($value, $search->value),
             MatchType::StartsWith => is_string($value) && is_string($search->value) && str_starts_with($value, $search->value),

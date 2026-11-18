@@ -271,7 +271,7 @@ final class AdvancedOptionsResolver
                     FieldOptionsResolver::fullText($target->matchType === MatchType::FullText, $target->fullText);
                 }
 
-                if (! is_string($id) || ! FieldOptionsResolver::identifier($id) || ! $target instanceof SearchTarget || ! self::target($target->target) || $target->valueType === ValueType::Boolean || $target->valueType !== ValueType::String && $target->matchType !== MatchType::Equals) {
+                if (! is_string($id) || ! FieldOptionsResolver::identifier($id) || ! $target instanceof SearchTarget || ! self::target($target->target) || $target->matchType === MatchType::Vector || $target->valueType === ValueType::Boolean || $target->valueType !== ValueType::String && $target->matchType !== MatchType::Equals) {
                     throw DapterException::configuration();
                 }
             }
@@ -445,7 +445,7 @@ final class AdvancedOptionsResolver
     {
         if ($d === null) {
             return null;
-        }$this->keys($d, ['output', 'locale', 'fullText']);
+        }$this->keys($d, ['output', 'locale', 'fullText', 'vector']);
         $locale = $d['locale'] ?? null;
 
         if ($locale !== null) {
@@ -456,7 +456,17 @@ final class AdvancedOptionsResolver
             }
         }
 
-        return new FieldOptions($d['output'] ?? null, $locale === null ? null : new LocaleOptions($locale['locale']), $this->fullText($d['fullText'] ?? null));
+        $vector = $d['vector'] ?? null;
+
+        if ($vector !== null) {
+            $this->keys($vector, ['dimensions', 'maxDistance']);
+
+            if (! is_int($vector['dimensions'] ?? null) || (! is_int($vector['maxDistance'] ?? null) && ! is_float($vector['maxDistance'] ?? null))) {
+                throw DapterException::configuration();
+            }
+        }
+
+        return new FieldOptions($d['output'] ?? null, $locale === null ? null : new LocaleOptions($locale['locale']), $this->fullText($d['fullText'] ?? null), $vector === null ? null : new VectorOptions($vector['dimensions'], $vector['maxDistance']));
     }
 
     /** @param array<string,mixed>|null $d */

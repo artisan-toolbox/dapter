@@ -135,7 +135,7 @@ type AdapterMetadata = {
   readonly channel: ChannelDescriptor | null;
 };
 type Scalar = string | number | boolean | null;
-type MatchType = 'contains' | 'equals' | 'starts_with' | 'ends_with' | 'full_text';
+type MatchType = 'contains' | 'equals' | 'starts_with' | 'ends_with' | 'full_text' | 'vector';
 type SortType = 'native' | 'regular' | 'string' | 'natural' | 'numeric' | 'locale';
 type FullTextPolicy = {
   readonly engine: 'pgsql';
@@ -153,10 +153,22 @@ type LocalePolicy = {
   readonly normalization: true;
   readonly numeric: false;
 };
+type VectorPolicy = {
+  readonly engine: 'pgsql';
+  readonly metric: 'l2';
+  readonly dimensions: number;
+  readonly maxDistance: number;
+  readonly input: 'prepared_vector';
+  readonly precision: 'float32';
+  readonly maxCoordinateMagnitude: 1000000;
+  readonly threshold: 'inclusive';
+  readonly ranking: 'filter_only';
+};
 type SearchDefinition = {
   readonly matchTypes: readonly MatchType[];
-  readonly valueType: 'string' | 'integer' | 'number';
+  readonly valueType: 'string' | 'integer' | 'number' | 'vector';
   readonly fullText?: FullTextPolicy;
+  readonly vector?: VectorPolicy;
 };
 type OrderDefinition = {
   readonly sortTypes: readonly SortType[];
@@ -180,8 +192,8 @@ type SearchMatch = 'all' | 'any';
 type GlobalSearchDefinition = {
   readonly valueType: 'string';
   readonly targets: Readonly<Record<string, {
-    readonly valueType: SearchDefinition['valueType'];
-    readonly matchType: MatchType;
+    readonly valueType: Exclude<SearchDefinition['valueType'], 'vector'>;
+    readonly matchType: Exclude<MatchType, 'vector'>;
     readonly fullText?: FullTextPolicy;
   }>>;
 };
@@ -241,7 +253,10 @@ type PagingDefinition = {
 });
 type SearchSelection = {
   readonly value: string | number;
-  readonly matchType: MatchType;
+  readonly matchType: Exclude<MatchType, 'vector'>;
+} | {
+  readonly value: readonly number[];
+  readonly matchType: 'vector';
 };
 type FilterSelection = {
   readonly value: Scalar | readonly Scalar[];
@@ -511,11 +526,18 @@ type FieldCapability<Available, Current, Input> = Readonly<{
   call(value: Input, options?: StateOptions): Promise<AsyncOutcome>;
   clear(options?: StateOptions): Promise<AsyncOutcome>;
 }>;
-type SearchValue<T> = T extends 'string' ? string : T extends 'integer' | 'number' ? number : never;
-type SearchInput<S extends SearchDefinition> = {
+type SearchValue<T> = T extends 'vector' ? readonly number[] : T extends 'string' ? string : T extends 'integer' | 'number' ? number : never;
+type SearchInput<S extends SearchDefinition> = S extends {
+  readonly valueType: 'vector';
+} ? {
+  readonly value: readonly number[];
+  readonly matchType: 'vector';
+} : S extends {
+  readonly valueType: 'string' | 'integer' | 'number';
+} ? {
   readonly value: SearchValue<S['valueType']>;
-  readonly matchType: S['matchTypes'][number];
-};
+  readonly matchType: Exclude<S['matchTypes'][number], 'vector'>;
+} : SearchSelection;
 type FilterInput<F extends FilterDefinition> = {
   readonly value: F extends {
     readonly multiple: true;
@@ -561,6 +583,7 @@ type DataAdapterHandle<Row = unknown, Definition extends AdapterDefinition = Ada
   readonly status: 'idle' | 'loading' | 'success' | 'error';
   readonly error: AdapterError | null;
   readonly integrationError: IntegrationError | null;
+  readonly share: () => string | null;
   readonly resetContext: () => Promise<AsyncOutcome>;
   readonly restartPolling: () => void;
   readonly infinite: InfiniteControls | null;
@@ -611,7 +634,9 @@ declare const __VLS_export: <P extends DataAdapterProps & Record<Exclude<keyof P
   } & ComponentDecoderRequirements<P, Row, Definition, Actions>> & (typeof globalThis extends {
     __VLS_PROPS_FALLBACK: infer P_1;
   } ? P_1 : {});
-  expose: (exposed: {}) => void;
+  expose: (exposed: import("vue").ShallowUnwrapRef<{
+    share: () => string | null;
+  }>) => void;
   attrs: any;
   slots: {
     default(state: ComponentSlot<P, Row, Definition, Actions>): unknown;
@@ -661,5 +686,5 @@ export declare function useDataAdapter<Row>(source: MaybeRefOrGetter<string>, op
 }): DataAdapterHandle<Row>;
 export declare function useDataAdapter(source: string): DataAdapterHandle;
 export declare const version: string;
-export { type AcceptedState, type AcceptedStateV2, type ActionControls, type ActionDefinition, type ActionDefinitions, type ActionHttpOptions, type ActionMetadata, type ActionMetadataMap, type ActionTransport, type ActionVisitOptions, type ActionsOf, type AdapterDefinition, type AdapterError, type AdapterMetadata, type AsyncOutcome, type ChannelDescriptor, type CursorPaging, type DapterEcho, type DapterEchoChannel, _default as DataAdapter, type DataAdapterHandle, type DataAdapterOptions, type DataAdapterProps, type DataAdapterSlot, type DefinitionDecoder, type FieldCapability, type FieldDefinition, type FieldSelection, type FieldView, type FieldsView, type FilterDefinition, type FilterInput, type FilterSelection, type FullTextPolicy, type GlobalOrderDefinition, type GlobalSearchDefinition, type GlobalView, type InfiniteControls, type InfiniteOptions, type IntegrationError, type LocalePolicy, type MatchType, type OffsetPaging, type OrderDefinition, type OrderInput, type OrderSelection, type PagingDefinition, type PagingPosition, type PagingSelection, type PollingOptions, type ReadonlyDeep, type RequestedState, type RequestedStateV2, type RowId, type RowRecords, type Scalar, type SearchDefinition, type SearchInput, type SearchMatch, type SearchSelection, type SimplePaging, type SortType, type SourcePaging, type SourceRequestedStateV2, type StabilityDefinition, type StabilityTerm, type StateOptions, type UnreadyPaging, type WriteOutcome };
+export { type AcceptedState, type AcceptedStateV2, type ActionControls, type ActionDefinition, type ActionDefinitions, type ActionHttpOptions, type ActionMetadata, type ActionMetadataMap, type ActionTransport, type ActionVisitOptions, type ActionsOf, type AdapterDefinition, type AdapterError, type AdapterMetadata, type AsyncOutcome, type ChannelDescriptor, type CursorPaging, type DapterEcho, type DapterEchoChannel, _default as DataAdapter, type DataAdapterHandle, type DataAdapterOptions, type DataAdapterProps, type DataAdapterSlot, type DefinitionDecoder, type FieldCapability, type FieldDefinition, type FieldSelection, type FieldView, type FieldsView, type FilterDefinition, type FilterInput, type FilterSelection, type FullTextPolicy, type GlobalOrderDefinition, type GlobalSearchDefinition, type GlobalView, type InfiniteControls, type InfiniteOptions, type IntegrationError, type LocalePolicy, type MatchType, type OffsetPaging, type OrderDefinition, type OrderInput, type OrderSelection, type PagingDefinition, type PagingPosition, type PagingSelection, type PollingOptions, type ReadonlyDeep, type RequestedState, type RequestedStateV2, type RowId, type RowRecords, type Scalar, type SearchDefinition, type SearchInput, type SearchMatch, type SearchSelection, type SimplePaging, type SortType, type SourcePaging, type SourceRequestedStateV2, type StabilityDefinition, type StabilityTerm, type StateOptions, type UnreadyPaging, type VectorPolicy, type WriteOutcome };
 //# sourceMappingURL=index.d.ts.map

@@ -90,10 +90,31 @@ final class ComparisonPolicy
         $locales = [];
         $fullText = [];
         $globalFullText = [];
+        $vectors = [];
+        $vectorSchema = null;
+        $vectorProbed = false;
         $probes = [];
         foreach ($options->fields as $name => $field) {
             $search = $field->search;
             $order = $field->order;
+
+            if ($search !== null && in_array(MatchType::Vector, $search->matchTypes, true)) {
+                if (! $vectorProbed) {
+                    $vectorSchema = $this->vector();
+                    $vectorProbed = true;
+                }
+
+                if ($vectorSchema !== null) {
+                    $vectors[$name] = $vectorSchema;
+                } else {
+                    foreach ($selection->searches as $clause) {
+                        if ($clause->field === $name && $clause->matchType === MatchType::Vector) {
+                            $unsupported = true;
+                        }
+                    }
+                    $search = null;
+                }
+            }
 
             if ($search !== null && in_array(MatchType::FullText, $search->matchTypes, true)) {
                 $configuration = $search->options->fullText->configuration;
@@ -163,7 +184,7 @@ final class ComparisonPolicy
         if ($unsupported) {
             throw DapterException::unsupported();
         }
-        $admitted = $fields === $options->fields ? $options : new ResolvedStoreOptions($options->mode, $options->size, $options->sizes, $options->guard, $options->access, $options->authorization, $fields, $options->driver, $options->global, $options->multiOrder, $options->maxOrder, $options->searchMatch, $options->allowedSearchMatches, $options->query, $options->actionsClass, $options->actionPolicies, $options->exactCounts, $options->resource, $options->broadcasting, $options->strictLiteralSearch);
+        $admitted = $fields === $options->fields ? $options : new ResolvedStoreOptions($options->mode, $options->size, $options->sizes, $options->guard, $options->access, $options->authorization, $fields, $options->driver, $options->global, $options->multiOrder, $options->maxOrder, $options->searchMatch, $options->allowedSearchMatches, $options->query, $options->actionsClass, $options->actionPolicies, $options->exactCounts, $options->resource, $options->broadcasting, $options->strictLiteralSearch, $options->browserState);
 
         $literal = null;
 
@@ -180,7 +201,44 @@ final class ComparisonPolicy
             $this->literalExecutionGuard = $this->pdo !== null;
         }
 
-        return new ResolvedComparisons($admitted, $locales, $fullText, $globalFullText, $literal);
+        return new ResolvedComparisons($admitted, $locales, $fullText, $globalFullText, $literal, $vectors);
+    }
+
+    private function vector(): ?string
+    {
+        if ($this->engine !== 'pgsql') {
+            return null;
+        }
+        $identity = $this->identity();
+
+        if ($this->executionIdentity !== null && $this->executionIdentity !== $identity) {
+            throw DapterException::configuration();
+        }
+        $this->executionIdentity = $identity;
+        $catalog = $this->pdo->query("select n.nspname as schema, pg_catalog.has_schema_privilege(n.oid, 'USAGE') and pg_catalog.has_type_privilege(t.oid, 'USAGE') as admitted from pg_catalog.pg_extension e join pg_catalog.pg_namespace n on n.oid = e.extnamespace join pg_catalog.pg_type t on t.typnamespace = n.oid and t.typname = 'vector' join pg_catalog.pg_depend d on d.objid = t.oid and d.classid = 'pg_catalog.pg_type'::pg_catalog.regclass and d.refobjid = e.oid and d.refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass and d.deptype = 'e' where e.extname = 'vector'");
+
+        if ($catalog === false) {
+            throw DapterException::configuration();
+        }
+        $rows = $catalog->fetchAll(PDO::FETCH_ASSOC);
+
+        if ($rows === []) {
+            return null;
+        }
+
+        if (count($rows) !== 1 || ! is_string($rows[0]['schema'] ?? null) || ! in_array($rows[0]['admitted'] ?? null, [true, 1, '1', 't'], true)) {
+            throw DapterException::configuration();
+        }
+        $schema = $rows[0]['schema'];
+        $quoted = '"'.str_replace('"', '""', $schema).'"';
+        $probe = $this->pdo->prepare('select (?::'.$quoted.'.vector OPERATOR('.$quoted.'.<->) ?::'.$quoted.'.vector) as distance');
+
+        if ($probe === false || ! $probe->execute(['[0,0,0]', '[1,0,0]']) || (float) $probe->fetchColumn() !== 1.0) {
+            throw DapterException::configuration();
+        }
+        $this->requiresExecutionGuard = true;
+
+        return $schema;
     }
 
     /** @param array<string,bool> $probes */

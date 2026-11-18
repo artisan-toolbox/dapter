@@ -21,6 +21,8 @@ import { parsePageV2 } from '../../resources/js/protocol-v2.js';
 import { parseChannel, parseUpdate } from '../../resources/js/records.js';
 import { deferred, intent, mount, mountTree, page, settle } from './phase2-fixtures.js';
 
+import { browserAt, browserState, memoryStorage, shareValue } from './browser-fixtures.js';
+
 const descriptor: ChannelDescriptor = {
     type: 'private',
     name: 'products.reader',
@@ -764,23 +766,15 @@ describe('creator compatibility and context reset', () => {
         const url = new URL('https://example.test/catalog?other=kept#rows');
         url.searchParams.set('dapter[other-owner]', 'other-snapshot');
         url.searchParams.set(
-            'dapter[context-owner]',
-            JSON.stringify({
-                version: 2,
-                source: 'Products',
-                state: intent({ paging: { mode: 'offset', current: 2, per_page: 2 } }),
-            }),
+            'catalog.context-owner',
+            shareValue('Products', intent({ paging: { mode: 'offset', current: 2, per_page: 2 } })),
         );
-        const location = { href: url.href };
-        vi.stubGlobal('window', Object.assign(new EventTarget(), { location }));
-        vi.stubGlobal('document', new EventTarget());
-        vi.spyOn(router, 'replace').mockImplementation((options) => {
-            location.href = String(options.url);
-            const callback = Reflect.get(options, 'onFinish');
-            if (typeof callback === 'function') Reflect.apply(callback, undefined, []);
-        });
-        request.mockResolvedValueOnce(
-            respond(page(intent({ paging: { mode: 'offset', current: 2, per_page: 2 } }))),
+        const { location } = browserAt(url.href);
+        request.mockResolvedValueOnce(respond({ ...page(), browserState })).mockResolvedValueOnce(
+            respond({
+                ...page(intent({ paging: { mode: 'offset', current: 2, per_page: 2 } })),
+                browserState,
+            }),
         );
         const { handle } = create({ id: 'context-owner', url: true });
         await settle();
@@ -793,7 +787,7 @@ describe('creator compatibility and context reset', () => {
         expect(handle.requested).toBeNull();
         await settle();
         expect(JSON.parse(String(request.mock.calls.at(-1)?.[0].data))).toEqual({ version: 2 });
-        expect(new URL(location.href).searchParams.has('dapter[context-owner]')).toBe(false);
+        expect(new URL(location.href).searchParams.has('catalog.context-owner')).toBe(false);
         expect(new URL(location.href).searchParams.get('dapter[other-owner]')).toBe(
             'other-snapshot',
         );
@@ -870,7 +864,10 @@ describe('render-aware optional polling', () => {
     it('holds replay and polling until browser publication and Vue rendering settle', async () => {
         vi.useFakeTimers();
         const location = { href: 'https://example.test/catalog?other=kept#rows' };
-        vi.stubGlobal('window', Object.assign(new EventTarget(), { location }));
+        vi.stubGlobal(
+            'window',
+            Object.assign(new EventTarget(), { location, localStorage: memoryStorage() }),
+        );
         vi.stubGlobal('document', Object.assign(new EventTarget(), { visibilityState: 'visible' }));
         let finish: (() => void) | null = null;
         vi.spyOn(router, 'replace').mockImplementation((options) => {
@@ -880,13 +877,13 @@ describe('render-aware optional polling', () => {
                 finish = () => Reflect.apply(callback, undefined, []);
         });
         const bus = echo();
-        request.mockResolvedValueOnce(respond(live()));
+        request.mockResolvedValueOnce(respond({ ...live(), browserState }));
         const { handle } = create({ echo: bus.echo, url: true, polling: { interval: 100 } });
         await settle();
         const state = intent({
             fields: { name: { search: { value: 'changed', matchType: 'contains' } } },
         });
-        request.mockResolvedValueOnce(respond(live(state)));
+        request.mockResolvedValueOnce(respond({ ...live(state), browserState }));
         const edit = handle.fields?.name?.search?.call({ value: 'changed', matchType: 'contains' });
         await edit;
         await settle();
@@ -907,7 +904,7 @@ describe('render-aware optional polling', () => {
         expect(request).toHaveBeenCalledTimes(2);
         await vi.advanceTimersByTimeAsync(1);
         expect(request).toHaveBeenCalledTimes(3);
-        waiting.resolve(respond(live(state)));
+        waiting.resolve(respond({ ...live(state), browserState }));
         await settle();
     });
     it('exposes render failure separately and pauses polling without an unhandled publication rejection', async () => {

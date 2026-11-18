@@ -22,7 +22,7 @@ final readonly class ResolvedLiteralSearch
     public static function declared(ResolvedStoreOptions $options): bool
     {
         foreach ($options->fields as $field) {
-            if ($field->search?->valueType === ValueType::String && array_filter($field->search->matchTypes, static fn (MatchType $type): bool => $type !== MatchType::FullText) !== []) {
+            if ($field->search?->valueType === ValueType::String && array_filter($field->search->matchTypes, static fn (MatchType $type): bool => ! in_array($type, [MatchType::FullText, MatchType::Vector], true)) !== []) {
                 return true;
             }
         }
@@ -111,7 +111,7 @@ final readonly class ResolvedLiteralSearch
             MatchType::Contains => str_contains($value, $input),
             MatchType::StartsWith => str_starts_with($value, $input),
             MatchType::EndsWith => str_ends_with($value, $input),
-            MatchType::FullText => throw DapterException::configuration(),
+            MatchType::FullText, MatchType::Vector => throw DapterException::configuration(),
         };
     }
 
@@ -139,7 +139,7 @@ final readonly class ResolvedLiteralSearch
                 MatchType::Contains => 'instr('.$value.', CAST(? AS BLOB)) > 0',
                 MatchType::StartsWith => 'CASE WHEN length(CAST(? AS BLOB)) = 0 THEN length('.$value.') >= 0 ELSE substr('.$value.', 1, length(CAST(? AS BLOB))) = CAST(? AS BLOB) END',
                 MatchType::EndsWith => 'CASE WHEN length(CAST(? AS BLOB)) = 0 THEN length('.$value.') >= 0 ELSE substr('.$value.', length('.$value.') - length(CAST(? AS BLOB)) + 1) = CAST(? AS BLOB) END',
-                MatchType::FullText => throw DapterException::configuration(),
+                MatchType::FullText, MatchType::Vector => throw DapterException::configuration(),
             };
         }
         $value = $this->operand($column);
@@ -171,7 +171,7 @@ final readonly class ResolvedLiteralSearch
             MatchType::Equals => $escaped,
             MatchType::StartsWith => $escaped.'%',
             MatchType::EndsWith => '%'.$escaped,
-            MatchType::FullText => throw DapterException::configuration(),
+            MatchType::FullText, MatchType::Vector => throw DapterException::configuration(),
         };
 
         return $this->strict ? [$pattern] : [UnicodeMarks::PATTERN, $pattern, UnicodeMarks::PATTERN];

@@ -19,6 +19,8 @@ import {
 } from './phase4-fixtures.js';
 import { deferred, intent, mount, mountTree, page, settle } from './phase2-fixtures.js';
 
+import { browserAt, browserState, shareValue } from './browser-fixtures.js';
+
 const original = http.getClient();
 const request = vi.fn<(config: HttpRequestConfig) => Promise<HttpResponse>>();
 const cleanups: (() => void)[] = [];
@@ -629,68 +631,52 @@ describe('cursor ownership review', () => {
     });
 });
 
-it('reports an incompatible advanced cold snapshot instead of leaving an offset owner idle', async () => {
+it('ignores an incompatible advanced snapshot and displays authorized offset defaults', async () => {
     const url = new URL('https://example.test/catalog?other=kept#results');
-    url.searchParams.set(
-        'dapter[cold-offset]',
-        JSON.stringify({ version: 2, source: 'Products', state: advancedIntent() }),
-    );
-    vi.stubGlobal('window', Object.assign(new EventTarget(), { location: { href: url.href } }));
-    vi.stubGlobal('document', new EventTarget());
+    url.searchParams.set('catalog.cold-offset', shareValue('Products', advancedIntent()));
+    const { location } = browserAt(url.href);
+    request.mockResolvedValueOnce(respond({ ...page(), browserState }));
     const owner = mount({ id: 'cold-offset', url: true });
     try {
         await settle();
-        expect(owner.handle).toMatchObject({
-            ready: false,
-            status: 'error',
-            error: { kind: 'validation', code: 'invalid_state' },
-        });
-        expect(request).not.toHaveBeenCalled();
-        expect(window.location.href).toBe(url.href);
+        expect(owner.handle).toMatchObject({ ready: true, status: 'success', requested: intent() });
+        expect(sent()).toEqual({ version: 2 });
+        expect(request).toHaveBeenCalledTimes(1);
+        expect(location.href).toBe('https://example.test/catalog?other=kept#results');
     } finally {
         owner.unmount();
+        vi.restoreAllMocks();
         vi.unstubAllGlobals();
     }
 });
 
-it('reports incompatible history restoration before the offset bootstrap settles', async () => {
-    const location = { href: 'https://example.test/catalog?other=kept#results' };
-    vi.stubGlobal('window', Object.assign(new EventTarget(), { location }));
-    vi.stubGlobal('document', new EventTarget());
+it('validates the latest history entry when offset bootstrap settles', async () => {
+    const clean = 'https://example.test/catalog?other=kept#results';
+    const { location, navigate } = browserAt(clean);
     const pending = deferred<HttpResponse>();
     request.mockReturnValueOnce(pending.promise);
     const owner = mount({ id: 'restoring-offset', url: true });
     try {
         await settle();
-        const url = new URL(location.href);
-        url.searchParams.set(
-            'dapter[restoring-offset]',
-            JSON.stringify({ version: 2, source: 'Products', state: advancedIntent() }),
-        );
-        location.href = url.href;
-        window.dispatchEvent(new Event('popstate'));
-        document.dispatchEvent(
-            new CustomEvent('inertia:navigate', { detail: { page: { url: url.href } } }),
-        );
+        const url = new URL(clean);
+        url.searchParams.set('catalog.restoring-offset', shareValue('Products', advancedIntent()));
+        navigate(url.href);
         await settle();
-        expect(owner.handle).toMatchObject({
-            ready: false,
-            status: 'error',
-            error: { kind: 'validation', code: 'invalid_state' },
-        });
+        expect(owner.handle.ready).toBe(false);
+        pending.resolve(respond({ ...page(), browserState }));
+        await settle();
         expect(request).toHaveBeenCalledTimes(1);
-        pending.resolve(respond(page()));
-        await settle();
-        expect(owner.handle).toMatchObject({ ready: false, status: 'error' });
-        expect(window.location.href).toBe(url.href);
+        expect(owner.handle).toMatchObject({ ready: true, requested: intent() });
+        expect(location.href).toBe(clean);
     } finally {
         owner.unmount();
+        vi.restoreAllMocks();
         vi.unstubAllGlobals();
     }
 });
 
 it.each(['simple', 'cursor'] as const)(
-    'restores a complete %s cold snapshot and a later history position with one read each',
+    'validates a %s cold snapshot against defaults and restores a later history position directly',
     async (mode) => {
         const initial = advancedIntent(
             mode === 'simple'
@@ -700,14 +686,14 @@ it.each(['simple', 'cursor'] as const)(
         );
         const url = new URL('https://example.test/catalog?other=kept#results');
         url.searchParams.set('dapter[other-reader]', 'unrelated-snapshot');
-        url.searchParams.set(
-            'dapter[cold-source]',
-            JSON.stringify({ version: 2, source: 'Feed', state: initial }),
+        url.searchParams.set('catalog.cold-source', shareValue('Feed', initial));
+        const { location, navigate } = browserAt(url.href);
+        const defaults = advancedIntent(
+            mode === 'simple' ? { mode, current: 1, per_page: 2 } : undefined,
         );
-        const location = { href: url.href };
-        vi.stubGlobal('window', Object.assign(new EventTarget(), { location }));
-        vi.stubGlobal('document', new EventTarget());
-        request.mockResolvedValueOnce(respond(advancedPage(initial)));
+        request
+            .mockResolvedValueOnce(respond({ ...advancedPage(defaults), browserState }))
+            .mockResolvedValueOnce(respond({ ...advancedPage(initial), browserState }));
         let handle: SourceHandle | undefined;
         const unmount = mountTree(() => {
             handle = useDataAdapter('Feed', {
@@ -722,28 +708,23 @@ it.each(['simple', 'cursor'] as const)(
             await settle();
             expect(handle?.requested).toEqual(initial);
             expect(sent()).toEqual({ version: 2, state: initial });
-            expect(request).toHaveBeenCalledTimes(1);
+            expect(request).toHaveBeenCalledTimes(2);
             const restored = advancedIntent(
                 mode === 'simple'
                     ? { mode, current: 8, per_page: 2 }
                     : { mode, cursor: 'history-token', per_page: 2 },
                 { global: initial.global },
             );
-            url.searchParams.set(
-                'dapter[cold-source]',
-                JSON.stringify({ version: 2, source: 'Feed', state: restored }),
-            );
-            location.href = url.href;
-            request.mockResolvedValueOnce(respond(advancedPage(restored)));
-            window.dispatchEvent(new Event('popstate'));
-            document.dispatchEvent(
-                new CustomEvent('inertia:navigate', { detail: { page: { url: url.href } } }),
-            );
+            url.searchParams.set('catalog.cold-source', shareValue('Feed', restored));
+            request.mockResolvedValueOnce(respond({ ...advancedPage(restored), browserState }));
+            navigate(url.href);
             await settle();
             expect(handle?.requested).toEqual(restored);
             expect(sent()).toEqual({ version: 2, state: restored });
-            expect(request).toHaveBeenCalledTimes(2);
-            expect(window.location.href).toBe(url.href);
+            expect(request).toHaveBeenCalledTimes(3);
+            expect(new URL(location.href).searchParams.get('catalog.cold-source')).toMatch(
+                /^[0-9a-f-]{36}$/,
+            );
             expect(new URL(window.location.href).searchParams.get('other')).toBe('kept');
             expect(new URL(window.location.href).searchParams.get('dapter[other-reader]')).toBe(
                 'unrelated-snapshot',
@@ -751,7 +732,106 @@ it.each(['simple', 'cursor'] as const)(
             expect(new URL(window.location.href).hash).toBe('#results');
         } finally {
             unmount();
+            vi.restoreAllMocks();
             vi.unstubAllGlobals();
         }
     },
 );
+
+it.each(['expired', 'invalid', 'denied'] as const)(
+    'recovers an imported cursor only when it is unusable (%s)',
+    async (outcome) => {
+        const saved = advancedIntent({ mode: 'cursor', cursor: 'old-cursor', per_page: 2 });
+        const clean = 'https://example.test/feed?other=kept#results';
+        const url = new URL(clean);
+        url.searchParams.set('catalog', shareValue('Feed', saved));
+        const { location, storage } = browserAt(url.href);
+        const defaults = respond({ ...advancedPage(), browserState });
+        request
+            .mockResolvedValueOnce(defaults)
+            .mockResolvedValueOnce(
+                outcome === 'expired'
+                    ? respond(expired, 409)
+                    : outcome === 'invalid'
+                      ? respond(
+                            {
+                                errors: {
+                                    _dapter_kind: ['validation'],
+                                    _dapter_code: ['invalid_cursor'],
+                                },
+                            },
+                            422,
+                        )
+                      : respond({}, 403),
+            )
+            .mockResolvedValueOnce(defaults);
+        let handle: SourceHandle | undefined;
+        const unmount = mountTree(() => {
+            handle = useDataAdapter('Feed', { protocol: 2, paging: 'source' });
+            return () => h('output');
+        });
+        try {
+            await settle();
+            await settle();
+            await settle();
+            if (outcome === 'denied') {
+                expect(request).toHaveBeenCalledTimes(2);
+                expect(handle?.error?.kind).toBe('access');
+                expect(handle?.ready).toBe(false);
+            } else {
+                expect(request).toHaveBeenCalledTimes(3);
+                expect(sent()).toEqual({ version: 2 });
+                expect(handle?.requested).toEqual(advancedIntent());
+                expect(location.href).toBe(clean);
+            }
+            expect(storage.length).toBe(0);
+        } finally {
+            unmount();
+            vi.restoreAllMocks();
+            vi.unstubAllGlobals();
+        }
+    },
+);
+
+it('accepts fresh defaults when the source changes between cold negotiation and a cursor restore', async () => {
+    const old = advancedIntent({ mode: 'cursor', cursor: 'saved-token', per_page: 2 });
+    const clean = 'https://example.test/feed?other=kept';
+    const url = new URL(clean);
+    url.searchParams.set('catalog', shareValue('Feed', old));
+    const { location, storage } = browserAt(url.href);
+    request
+        .mockResolvedValueOnce(respond({ ...advancedPage(), browserState }))
+        .mockImplementationOnce(async (config) => {
+            if (config.headers?.['X-Dapter-State-Version'] !== browserState.version)
+                return respond(
+                    { errors: { _dapter_kind: ['validation'], _dapter_code: ['invalid_cursor'] } },
+                    422,
+                );
+            return respond({
+                ...page(),
+                browserState: { ...browserState, version: 'b'.repeat(64) },
+            });
+        });
+    let handle: SourceHandle | undefined;
+    const unmount = mountTree(() => {
+        handle = useDataAdapter('Feed', { protocol: 2, paging: 'source' });
+        return () => h('output');
+    });
+    try {
+        await settle();
+        await settle();
+        await settle();
+        expect(request).toHaveBeenCalledTimes(2);
+        expect(handle).toMatchObject({
+            ready: true,
+            requested: intent(),
+            paging: { mode: 'offset' },
+        });
+        expect(location.href).toBe(clean);
+        expect(storage.length).toBe(0);
+    } finally {
+        unmount();
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+    }
+});

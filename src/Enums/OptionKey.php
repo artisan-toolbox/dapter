@@ -12,6 +12,8 @@ enum OptionKey: string
     case Paging = 'paging';
     case ExactCounts = 'exact_counts';
     case StrictLiteralSearch = 'strict_literal_search';
+    case StateTtl = 'state_ttl';
+    case StateKey = 'state_key';
     case Size = 'size';
     case Sizes = 'sizes';
     case Guard = 'guard';

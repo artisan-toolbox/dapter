@@ -15,7 +15,7 @@ import {
 } from './records.js';
 import { subscribe, type IntegrationError } from './realtime.js';
 import { createActionController } from './actions.js';
-import { createBrowser } from './browser.js';
+import { BrowserKeyConflict, createBrowser } from './browser.js';
 import { HttpNetworkError } from '@inertiajs/core';
 import { useHttp } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
@@ -251,12 +251,12 @@ function projectGlobal(
 }
 export function createV2Controller<P extends SourceAdapterProps>(
     props: P,
-    identity: string,
 ): { state: ComputedRef<DataAdapterSlot<P>>; start: () => void; dispose: () => void };
-export function createV2Controller(
-    props: SourceAdapterProps,
-    identity: string,
-): { state: ComputedRef<AnyDataAdapterHandle>; start: () => void; dispose: () => void } {
+export function createV2Controller(props: SourceAdapterProps): {
+    state: ComputedRef<AnyDataAdapterHandle>;
+    start: () => void;
+    dispose: () => void;
+} {
     if (
         props.searchDebounce !== undefined &&
         (!Number.isSafeInteger(props.searchDebounce) || props.searchDebounce < 0)
@@ -576,57 +576,22 @@ export function createV2Controller(
             old.settle({ status: 'superseded' });
         }
     }
-    function localError(): void {
-        session.value = {
-            ...session.value,
-            error: Object.freeze({
-                kind: 'validation',
-                code: 'invalid_state',
-                message: 'The saved adapter state is invalid.',
-            }),
-            status: 'error',
-        };
-    }
-    function parseSaved(snapshot: RequestedStateV2 | null): RequestedStateV2 | null {
-        if (snapshot === null) return null;
-        const restored = parseRequestedV2(snapshot, session.value.accepted?.definition);
-        if (props.paging !== 'source' && restored.paging.mode !== 'offset')
-            throw new Error('Source paging requires opt-in');
-        return restored;
-    }
     function makeBrowser() {
         return createBrowser({
             source: props.source,
-            id: identity,
+            id: props.id,
             enabled: props.url !== false,
             scrollContainer: () =>
                 props.scrollContainer === undefined ? null : toValue(props.scrollContainer),
             onRestore(snapshot) {
                 invalidate();
-                try {
-                    void submit(parseSaved(snapshot), true, 0, 'history');
-                } catch {
-                    localError();
-                }
-            },
-            onInvalid() {
-                invalidate();
-                localError();
+                void submit(snapshot, true, 0, 'history');
             },
         });
     }
     let browser = makeBrowser();
     function initial() {
-        const saved = browser.start();
-        if (saved.invalid) {
-            localError();
-            return;
-        }
-        try {
-            void submit(parseSaved(saved.snapshot), true, 0, 'initial');
-        } catch {
-            localError();
-        }
+        void submit(null, true, 0, 'initial');
     }
 
     function submit(
@@ -685,6 +650,14 @@ export function createV2Controller(
             appendOperation = { promise, settle: resolve };
             infiniteState.value = 'loading';
         }
+        function followRead(
+            target: RequestedStateV2 | null,
+            nextReason: 'initial' | 'history' | 'reset',
+        ) {
+            pending = null;
+            appendOperation = null;
+            void submit(target, true, 0, nextReason, explicit, settledOutcome).then(resolve);
+        }
         async function run() {
             if (!mounted || active !== generation) return;
             work = { kind: 'requesting', generation: active };
@@ -693,8 +666,19 @@ export function createV2Controller(
             ).withAllErrors();
             let rejected: AdapterError | null = null,
                 received = false;
+            const expectedVersion = state && props.url !== false ? browser.version() : undefined;
             try {
                 const response = await form.post(route('dapter.data', { source: props.source }), {
+                    ...(props.url !== false
+                        ? {
+                              headers: {
+                                  'X-Dapter-Browser-State': '1',
+                                  ...(expectedVersion
+                                      ? { 'X-Dapter-State-Version': expectedVersion }
+                                      : {}),
+                              },
+                          }
+                        : {}),
                     onError: (errors: unknown) => {
                         rejected = validationFailure(errors, 2);
                     },
@@ -725,26 +709,68 @@ export function createV2Controller(
                 if (rejected) throw rejected;
                 received = true;
                 const page = parsePageV2(response);
+                let effectiveState = state;
+                let completedReason = pending?.promise === promise ? pending.reason : reason;
+                if (props.url !== false && browser.changed(page.browserState)) {
+                    await browser.reset();
+                    if (!mounted || active !== generation) return;
+                    browser.dispose();
+                    browser = makeBrowser();
+                    clearLive();
+                    const serverDiscardedState =
+                        expectedVersion !== null &&
+                        page.browserState !== undefined &&
+                        expectedVersion !== page.browserState.version;
+                    if (state && !serverDiscardedState) {
+                        followRead(null, 'reset');
+                        return;
+                    }
+                    effectiveState = null;
+                    completedReason = 'reset';
+                }
                 if (props.paging !== 'source' && page.paging.mode !== 'offset')
                     throw new Error('Source paging requires opt-in');
-                if (state && state.paging.mode !== page.requested.paging.mode)
+                if (effectiveState && effectiveState.paging.mode !== page.requested.paging.mode)
                     throw new Error('Mismatched requested mode');
                 if (
                     page.requested.paging.mode === 'cursor' &&
                     page.requested.paging.cursor !==
-                        (state?.paging.mode === 'cursor' ? state.paging.cursor : null)
+                        (effectiveState?.paging.mode === 'cursor'
+                            ? effectiveState.paging.cursor
+                            : null)
                 )
                     throw new Error('Mismatched incoming cursor');
                 if (
-                    state?.paging.mode === 'simple' &&
+                    effectiveState?.paging.mode === 'simple' &&
                     (page.requested.paging.mode !== 'simple' ||
-                        page.requested.paging.current !== state.paging.current)
+                        page.requested.paging.current !== effectiveState.paging.current)
                 )
                     throw new Error('Mismatched simple ordinal');
+                const decoded = decode(page, props);
+                browser.configure(
+                    page.browserState,
+                    decoded.definition,
+                    effectiveState ? null : page.requested,
+                );
+                if (!effectiveState && completedReason === 'initial') {
+                    const candidate = browser.candidate();
+                    if (candidate) {
+                        followRead(candidate, 'initial');
+                        return;
+                    }
+                }
+                if (
+                    effectiveState &&
+                    (reason === 'initial' || reason === 'history') &&
+                    !browser.candidate()
+                ) {
+                    followRead(null, 'reset');
+                    return;
+                }
                 const result = acceptWindow(
                     session.value.accepted,
-                    decode(page, props),
-                    reason === 'append',
+                    decoded,
+                    completedReason === 'append',
                     infiniteEnabled,
                 );
                 if (!mounted || active !== generation) return;
@@ -763,7 +789,6 @@ export function createV2Controller(
                     resolve({ status: 'superseded' });
                     return;
                 }
-                const completedReason = pending?.promise === promise ? pending.reason : reason;
                 const completedExplicit =
                     pending?.promise === promise ? pending.explicit : explicit;
                 listen(
@@ -808,13 +833,27 @@ export function createV2Controller(
                 if (!mounted || active !== generation) return;
                 const failure =
                     rejected ??
-                    (!received && cause instanceof HttpNetworkError
+                    (cause instanceof BrowserKeyConflict
                         ? ({
-                              kind: 'network',
-                              code: 'request_failed',
-                              message: 'The data source could not be reached.',
-                          } satisfies AdapterError)
-                        : protocolError());
+                              kind: 'validation',
+                              code: 'duplicate_state_key',
+                              message: cause.message,
+                          } as const)
+                        : !received && cause instanceof HttpNetworkError
+                          ? ({
+                                kind: 'network',
+                                code: 'request_failed',
+                                message: 'The data source could not be reached.',
+                            } satisfies AdapterError)
+                          : protocolError());
+                if (
+                    state &&
+                    (reason === 'initial' || reason === 'history') &&
+                    (failure.kind === 'cursor_expired' || failure.code === 'invalid_cursor')
+                ) {
+                    followRead(null, 'reset');
+                    return;
+                }
                 discardBuffer();
                 pollingPaused = true;
                 cancelPoll();
@@ -1143,6 +1182,12 @@ export function createV2Controller(
                   })
                 : null,
             resetContext: own(resetContext),
+            share: () => {
+                const accepted = session.value.accepted;
+                return mounted && captured === epoch && accepted
+                    ? browser.share(accepted.window?.start ?? accepted.page.requested)
+                    : null;
+            },
             restartPolling: () => {
                 if (mounted && captured === epoch) restartPolling();
             },

@@ -8,6 +8,7 @@ return [
     'broadcasting' => ['context' => null, 'queue_connection' => null, 'queue' => null],
     'declarations' => ['strict_literal_search' => false],
     'access' => ['guard' => 'web'],
+    'state' => ['ttl' => 240],
     'paging' => [
         'mode' => PagingMode::Offset,
         'exact_counts' => false,

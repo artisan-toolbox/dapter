@@ -37,4 +37,5 @@ const props = withDefaults(
 );
 defineSlots<{ default(state: ComponentSlot<P, Row, Definition, Actions>): unknown }>();
 const state = componentAdapter<P, Row, Definition, Actions>(props);
+defineExpose({ share: (): string | null => state.value?.share() ?? null });
 </script>

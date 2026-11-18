@@ -18,6 +18,7 @@ use ArtisanToolbox\Dapter\Enums\ValueType;
 use ArtisanToolbox\Dapter\Http\DapterException;
 use ArtisanToolbox\Dapter\Options\ActionPolicy;
 use ArtisanToolbox\Dapter\Options\BroadcastOptions;
+use ArtisanToolbox\Dapter\Options\BrowserStatePolicy;
 use ArtisanToolbox\Dapter\Options\FieldOperation;
 use ArtisanToolbox\Dapter\Options\FieldOptions;
 use ArtisanToolbox\Dapter\Options\FieldSetting;
@@ -32,6 +33,8 @@ use ArtisanToolbox\Dapter\Options\RecordTarget;
 use ArtisanToolbox\Dapter\Options\SearchDefinition;
 use ArtisanToolbox\Dapter\Options\SearchTarget;
 use ArtisanToolbox\Dapter\Support\TrustedHandlerBinder;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Closure;
 use Illuminate\Http\Resources\Json\JsonResource;
 use UnitEnum;
@@ -57,6 +60,7 @@ final class StoreOptions
             'guard' => config('dapter.access.guard'),
             'broadcast_context' => config('dapter.broadcasting.context'),
             'declarations' => config('dapter.declarations', []),
+            'state_ttl' => BrowserStatePolicy::configuredMinutes(config('dapter.state', ['ttl' => 240])),
         ]);
     }
 
@@ -93,6 +97,16 @@ final class StoreOptions
     public function strictLiteralSearch(bool $enabled = true): self
     {
         return $this->with(OptionKey::StrictLiteralSearch, $enabled);
+    }
+
+    public function stateTtl(int|CarbonInterface $ttl): self
+    {
+        return $this->with(OptionKey::StateTtl, $ttl instanceof CarbonInterface ? CarbonImmutable::instance($ttl) : $ttl);
+    }
+
+    public function stateKey(string $key): self
+    {
+        return $this->with(OptionKey::StateKey, $key);
     }
 
     public function exactCounts(bool $enabled = true): self

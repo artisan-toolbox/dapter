@@ -120,7 +120,7 @@ it('preserves literal boundaries scopes counts and every paging mode', function 
                     MatchType::Equals => $value === $needle,
                     MatchType::StartsWith => str_starts_with($value, $needle),
                     MatchType::EndsWith => str_ends_with($value, $needle),
-                    MatchType::FullText => throw new LogicException('Literal fixture cannot use full text.'),
+                    MatchType::FullText, MatchType::Vector => throw new LogicException('Literal fixture requires scalar literal matching.'),
                 };
 
                 if ($row['tenant'] === 1 && $match) {

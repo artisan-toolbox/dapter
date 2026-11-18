@@ -21,6 +21,7 @@ use ArtisanToolbox\Dapter\Options\OptionsResolver;
 use ArtisanToolbox\Dapter\Paging\CursorAccess;
 use ArtisanToolbox\Dapter\Support\SourceRegistry;
 use ArtisanToolbox\Dapter\Support\SourceResolver;
+use ArtisanToolbox\Dapter\Support\SourceVersion;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Factory;
@@ -60,6 +61,13 @@ final class DataController
             if ($options->broadcasting !== null && $live === null) {
                 throw DapterException::configuration();
             }
+            $browserVersion = $version === 2 && $request->header('X-Dapter-Browser-State') === '1'
+                ? (new SourceVersion)->forSource($instance)
+                : null;
+
+            if ($browserVersion !== null && $request->hasHeader('X-Dapter-State-Version') && ! hash_equals($browserVersion, (string) $request->header('X-Dapter-State-Version'))) {
+                $intent = ReadIntent::fromJson('{"version":2}');
+            }
             $paging = $intent->paging($options);
             $selection = $intent->selection($options);
             $cursorAccess = $paging instanceof CursorRequest ? CursorAccess::forSource($source, $instance, $options, $selection, $paging, $user) : null;
@@ -87,6 +95,10 @@ final class DataController
 
             if ($version === 2) {
                 $response['metadata'] = ['records' => $prepared->records, 'channel' => $live?->channel];
+
+                if ($browserVersion !== null) {
+                    $response['browserState'] = $options->browserState->toArray($source, $browserVersion);
+                }
             }
 
             if ($actions !== []) {

@@ -12,7 +12,13 @@ import {
 } from './protocol.js';
 
 export type Scalar = string | number | boolean | null;
-export type MatchType = 'contains' | 'equals' | 'starts_with' | 'ends_with' | 'full_text';
+export type MatchType =
+    | 'contains'
+    | 'equals'
+    | 'starts_with'
+    | 'ends_with'
+    | 'full_text'
+    | 'vector';
 export type SortType = 'native' | 'regular' | 'string' | 'natural' | 'numeric' | 'locale';
 export type FullTextPolicy = {
     readonly engine: 'pgsql';
@@ -30,10 +36,22 @@ export type LocalePolicy = {
     readonly normalization: true;
     readonly numeric: false;
 };
+export type VectorPolicy = {
+    readonly engine: 'pgsql';
+    readonly metric: 'l2';
+    readonly dimensions: number;
+    readonly maxDistance: number;
+    readonly input: 'prepared_vector';
+    readonly precision: 'float32';
+    readonly maxCoordinateMagnitude: 1000000;
+    readonly threshold: 'inclusive';
+    readonly ranking: 'filter_only';
+};
 export type SearchDefinition = {
     readonly matchTypes: readonly MatchType[];
-    readonly valueType: 'string' | 'integer' | 'number';
+    readonly valueType: 'string' | 'integer' | 'number' | 'vector';
     readonly fullText?: FullTextPolicy;
+    readonly vector?: VectorPolicy;
 };
 export type OrderDefinition = {
     readonly sortTypes: readonly SortType[];
@@ -56,8 +74,8 @@ export type GlobalSearchDefinition = {
         Record<
             string,
             {
-                readonly valueType: SearchDefinition['valueType'];
-                readonly matchType: MatchType;
+                readonly valueType: Exclude<SearchDefinition['valueType'], 'vector'>;
+                readonly matchType: Exclude<MatchType, 'vector'>;
                 readonly fullText?: FullTextPolicy;
             }
         >
@@ -127,10 +145,9 @@ export type AdvancedResultPaging = {
           readonly next_cursor: string | null;
       }
 );
-export type SearchSelection = {
-    readonly value: string | number;
-    readonly matchType: MatchType;
-};
+export type SearchSelection =
+    | { readonly value: string | number; readonly matchType: Exclude<MatchType, 'vector'> }
+    | { readonly value: readonly number[]; readonly matchType: 'vector' };
 export type FilterSelection = { readonly value: Scalar | readonly Scalar[] };
 export type OrderSelection = { readonly direction: 'asc' | 'desc'; readonly sortType: SortType };
 export type FieldSelection = {
@@ -174,7 +191,13 @@ export type AcceptedStateV2<Position extends PagingPosition = LegacyPage['reques
           };
     readonly paging: Position;
 };
+export type BrowserStatePolicy = {
+    readonly key: string;
+    readonly version: string;
+    readonly expiration: { readonly minutes: number } | { readonly at: number };
+};
 export type PageV2 = Omit<LegacyPage, 'requested' | 'state' | 'paging'> & {
+    readonly browserState?: BrowserStatePolicy;
     readonly requested: SourceRequestedStateV2;
     readonly state: AcceptedStateV2<PagingPosition>;
     readonly paging: LegacyPage['paging'] | AdvancedResultPaging;
@@ -218,7 +241,8 @@ function match(value: unknown): MatchType {
         value === 'equals' ||
         value === 'starts_with' ||
         value === 'ends_with' ||
-        value === 'full_text'
+        value === 'full_text' ||
+        value === 'vector'
     )
         return value;
     throw new Error('Invalid match');
@@ -300,14 +324,94 @@ function parseLocale(value: unknown): LocalePolicy {
         numeric: false,
     };
 }
+function parseVectorPolicy(value: unknown): VectorPolicy {
+    const input = object(value);
+    exact(input, [
+        'engine',
+        'metric',
+        'dimensions',
+        'maxDistance',
+        'input',
+        'precision',
+        'maxCoordinateMagnitude',
+        'threshold',
+        'ranking',
+    ]);
+    if (
+        input.engine !== 'pgsql' ||
+        input.metric !== 'l2' ||
+        typeof input.dimensions !== 'number' ||
+        !Number.isSafeInteger(input.dimensions) ||
+        input.dimensions < 1 ||
+        input.dimensions > 16000 ||
+        typeof input.maxDistance !== 'number' ||
+        !Number.isFinite(input.maxDistance) ||
+        input.maxDistance < 0 ||
+        input.maxDistance > Number.MAX_SAFE_INTEGER ||
+        input.input !== 'prepared_vector' ||
+        input.precision !== 'float32' ||
+        input.maxCoordinateMagnitude !== 1000000 ||
+        input.threshold !== 'inclusive' ||
+        input.ranking !== 'filter_only'
+    )
+        throw new Error('Invalid vector policy');
+    return {
+        engine: 'pgsql',
+        metric: 'l2',
+        dimensions: input.dimensions,
+        maxDistance: input.maxDistance,
+        input: 'prepared_vector',
+        precision: 'float32',
+        maxCoordinateMagnitude: 1000000,
+        threshold: 'inclusive',
+        ranking: 'filter_only',
+    };
+}
+function parseVector(value: unknown, policy?: VectorPolicy): readonly number[] {
+    if (
+        !Array.isArray(value) ||
+        value.length < 1 ||
+        value.length > 16000 ||
+        (policy && value.length !== policy.dimensions)
+    )
+        throw new Error('Invalid vector dimensions');
+    return Array.from(value, (coordinate: unknown) => {
+        if (
+            typeof coordinate !== 'number' ||
+            !Number.isFinite(coordinate) ||
+            Math.abs(coordinate) > 1000000
+        )
+            throw new Error('Invalid vector coordinate');
+        return Math.fround(coordinate);
+    });
+}
 function parseSearch(value: unknown): SearchDefinition | null {
     if (value === null) return null;
     const input = object(value);
-    exact(input, ['matchTypes', 'valueType'], ['fullText']);
+    exact(input, ['matchTypes', 'valueType'], ['fullText', 'vector']);
+    if (input.valueType === 'vector') {
+        if (
+            !Array.isArray(input.matchTypes) ||
+            input.matchTypes.length !== 1 ||
+            input.matchTypes[0] !== 'vector' ||
+            Object.hasOwn(input, 'fullText')
+        )
+            throw new Error('Invalid vector search');
+        return {
+            valueType: 'vector',
+            matchTypes: ['vector'],
+            vector: parseVectorPolicy(input.vector),
+        };
+    }
+    if (Object.hasOwn(input, 'vector')) throw new Error('Mismatched vector policy');
     const valueType = input.valueType;
     if (valueType !== 'string' && valueType !== 'integer' && valueType !== 'number')
         throw new Error('Invalid value type');
-    const matchTypes = list(input.matchTypes, match);
+    const matchTypes = list(input.matchTypes, (value) => {
+        const parsed = match(value);
+        if (parsed === 'vector') throw new Error('Mismatched vector search');
+        return parsed;
+    });
     if (valueType !== 'string' && (matchTypes.length !== 1 || matchTypes[0] !== 'equals'))
         throw new Error('Invalid search');
     if (matchTypes.includes('full_text') !== Object.hasOwn(input, 'fullText'))
@@ -397,10 +501,12 @@ export function parseDefinition(value: unknown): AdapterDefinition {
                 matchTypes: [target.matchType],
                 ...(Object.hasOwn(target, 'fullText') ? { fullText: target.fullText } : {}),
             });
-            if (!parsed) throw new Error('Invalid target');
+            if (!parsed || parsed.valueType === 'vector') throw new Error('Invalid target');
+            const targetMatch = match(target.matchType);
+            if (targetMatch === 'vector') throw new Error('Invalid global vector search');
             targets[id] = {
                 valueType: parsed.valueType,
-                matchType: match(target.matchType),
+                matchType: targetMatch,
                 ...(parsed.fullText ? { fullText: parsed.fullText } : {}),
             };
         }
@@ -536,19 +642,28 @@ export function parseRequestedV2(
         if (Object.hasOwn(field, 'search')) {
             const selection = object(field.search);
             exact(selection, ['value', 'matchType']);
-            const value = scalar(selection.value),
-                matchType = match(selection.matchType);
-            if (
-                (typeof value !== 'string' && typeof value !== 'number') ||
-                (capability &&
-                    (!capability.search ||
-                        !capability.search.matchTypes.includes(matchType) ||
-                        !validSearchValue(value, capability.search.valueType)))
-            )
-                throw new Error('Invalid search');
-            if (matchType === 'full_text' && !validFullTextInput(value))
-                throw new Error('Invalid full-text input');
-            if (value !== '') search = { value, matchType };
+            const matchType = match(selection.matchType);
+            if (matchType === 'vector') {
+                if (capability && capability.search?.valueType !== 'vector')
+                    throw new Error('Unavailable vector search');
+                const value = parseVector(selection.value, capability?.search?.vector);
+                search = { value, matchType };
+            } else {
+                const value = scalar(selection.value);
+                if (
+                    (typeof value !== 'string' && typeof value !== 'number') ||
+                    (capability &&
+                        (!capability.search ||
+                            !capability.search.matchTypes.some(
+                                (available) => available === matchType,
+                            ) ||
+                            !validSearchValue(value, capability.search.valueType)))
+                )
+                    throw new Error('Invalid search');
+                if (matchType === 'full_text' && !validFullTextInput(value))
+                    throw new Error('Invalid full-text input');
+                if (value !== '') search = { value, matchType };
+            }
         }
         const filters = dictionary<FilterSelection>();
         if (Object.hasOwn(field, 'filters'))
@@ -773,11 +888,12 @@ export function assertNarrowing(original: AdapterDefinition, narrowed: AdapterDe
             (!source.search ||
                 field.search.valueType !== source.search.valueType ||
                 field.search.matchTypes.some(
-                    (value) => !source.search?.matchTypes.includes(value),
+                    (value) => !source.search?.matchTypes.some((available) => available === value),
                 ) ||
-                (field.search.matchTypes.includes('full_text') &&
+                (field.search.matchTypes.some((matchType) => matchType === 'full_text') &&
                     JSON.stringify(field.search.fullText) !==
-                        JSON.stringify(source.search.fullText)))
+                        JSON.stringify(source.search.fullText)) ||
+                JSON.stringify(field.search.vector) !== JSON.stringify(source.search.vector))
         )
             throw new Error('Expanded search');
         if (
@@ -803,13 +919,38 @@ export function assertNarrowing(original: AdapterDefinition, narrowed: AdapterDe
         }
     }
 }
+function parseBrowserState(value: unknown): BrowserStatePolicy {
+    const policy = object(value);
+    exact(policy, ['key', 'version', 'expiration']);
+    if (
+        typeof policy.key !== 'string' ||
+        policy.key.trim() === '' ||
+        typeof policy.version !== 'string' ||
+        !/^[a-f0-9]{64}$/.test(policy.version)
+    )
+        throw new Error('Invalid browser state policy');
+    const deadline = object(policy.expiration);
+    exact(deadline, ['at' in deadline ? 'at' : 'minutes']);
+    return {
+        key: policy.key,
+        version: policy.version,
+        expiration:
+            'at' in deadline
+                ? { at: positive(deadline.at) }
+                : { minutes: positive(deadline.minutes) },
+    };
+}
+
 export function parsePageV2(value: unknown): PageV2 {
     const input = object(value);
     exact(
         input,
         ['version', 'data', 'requested', 'state', 'paging', 'capabilities', 'metadata'],
-        ['actions'],
+        ['actions', 'browserState'],
     );
+    const browserState = Object.hasOwn(input, 'browserState')
+        ? { browserState: parseBrowserState(input.browserState) }
+        : {};
     if (input.version !== 2) throw new Error('Invalid version');
     const definition = parseDefinition(input.capabilities),
         requested = parseRequestedV2(input.requested, definition);
@@ -925,6 +1066,7 @@ export function parsePageV2(value: unknown): PageV2 {
         )
             throw new Error('Invalid empty cursor window');
         return freeze({
+            ...browserState,
             data: input.data,
             requested,
             state: { order: acceptedOrder, paging: requested.paging },
@@ -935,7 +1077,7 @@ export function parsePageV2(value: unknown): PageV2 {
             ...(Object.hasOwn(input, 'actions') ? { actions: parseActions(input.actions) } : {}),
         });
     }
-    const { metadata: _metadata, ...base } = input;
+    const { metadata: _metadata, browserState: _policy, ...base } = input;
     const legacy = {
         ...base,
         version: 1,
@@ -963,6 +1105,7 @@ export function parsePageV2(value: unknown): PageV2 {
     };
     return freeze({
         ...parseLegacy(legacy),
+        ...browserState,
         requested,
         state: { order: acceptedOrder, paging: requested.paging },
         definition,

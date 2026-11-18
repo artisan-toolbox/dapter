@@ -1,31 +1,30 @@
 ---
 name: dapter-development
-description: Use the local Dapter preview in Laravel 13, Inertia 3, and Vue applications. Declare Collection or SQLite, MySQL, and PostgreSQL sources; configure field and global queries, access, native actions, offset, simple, or cursor paging; share headless DataAdapter owners; add per-row Resources, authorized committed live row replacements, independent polling, or guarded infinite windows; set source-owned literal sensitivity; use explicit Collection locale order and PostgreSQL plain-text full-text filters. Inspect installed preview APIs before use. Do not use for generic Eloquent queries.
+description: Use when installing Dapter or building a headless Dapter listing in Laravel, Inertia, and Vue. Covers Collection and Eloquent sources, access, field and global queries, authorized actions, paging, Resources, live updates, polling, and infinite loading.
 license: MIT
 metadata:
   author: Allan Mariucci Carvalho
 ---
 
-# Use the Dapter preview
+# Use Dapter in a Laravel application
 
-Dapter's unpublished local preview supports Collection and ordinary SQLite, MySQL, and PostgreSQL Eloquent offset reads. Raw protocol v2 adds field and global search, finite filters, declared All or Any grouping, bounded multi-order, and opaque order presets. The Vue adapter and composable default to protocol v1 for paging and access. Explicit protocol 2 adds these field controls, URL history, search debounce, and scoped scrolling. Native authorized actions work with either read version. Protocol 2 with `paging: 'source'` adds simple and cursor pagination, optional exact counts, and explicit cursor recovery. Optional Resources work with both read versions. Registered live replacements, polling, and guarded infinite windows require an explicit protocol 2 owner.
+Dapter `1.0.0-alpha.1` supports Collection and ordinary SQLite, MySQL, and PostgreSQL Eloquent offset reads. Raw protocol v2 adds field and global search, finite filters, declared All or Any grouping, bounded multi-order, and opaque order presets. The Vue adapter and composable default to protocol v1 for paging and access. Explicit protocol 2 adds these field controls, URL history, search debounce, and scoped scrolling. Native authorized actions work with either read version. Protocol 2 with `paging: 'source'` adds simple and cursor pagination, optional exact counts, and explicit cursor recovery. Optional Resources work with both read versions. Registered live replacements, polling, and guarded infinite windows require an explicit protocol 2 owner.
 
 ## Prerequisites
 
-Use PHP ^8.5, Laravel ^13.0, and Inertia Laravel ^3.0. The frontend requires Vue ^3.5.40, Inertia Vue and Core ^3.0.3, Ziggy ^2.6.5, Node.js >=24.11.0, and Vue-aware Vite and TypeScript tooling. Inertia 3.0.3 supplies the HTTP exception callback used to classify failed reads. Vue 3.5.40 preserves the component's public props and shared slot handle identity. There is no stable release.
+Use PHP ^8.5, Laravel ^13.0, and Inertia Laravel ^3.0. The frontend requires Vue ^3.5.40, Inertia Vue and Core ^3.0.3, Ziggy ^2.6.5, Node.js >=24.11.0, and Vue-aware Vite and TypeScript tooling. Inertia 3.0.3 supplies the HTTP exception callback used to classify failed reads. Vue 3.5.40 preserves the component's public props and shared slot handle identity. These instructions target alpha.1. Check the installed version with `composer show artisan-toolbox/dapter` before applying them to an existing installation.
 
-## Install a local preview
+## Install the published alpha
 
-Place the Dapter checkout on its `1.x` branch beside the consuming Laravel application. From the application root, run Composer before npm:
+In the Laravel application root, install the backend and Ziggy before the frontend.
 
 ```bash
-composer config repositories.dapter path ../dapter
-composer require artisan-toolbox/dapter:"1.x-dev@dev" tightenco/ziggy:"^2.6.5"
+composer require artisan-toolbox/dapter:1.0.0-alpha.1 tightenco/ziggy:"^2.6.5"
 npm pkg set 'dependencies.@artisan-toolbox/dapter=file:vendor/artisan-toolbox/dapter'
 npm install --install-links
 ```
 
-The npm dependency resolves from `vendor/artisan-toolbox/dapter`, not the npm registry. Keep the source package outside Vite dependency pre-bundling so the exported component and composable share one module graph. Add this setting to the consuming application's existing Vite configuration:
+Composer supplies the JavaScript package in `vendor/artisan-toolbox/dapter`. Keep the source package outside Vite dependency pre-bundling so the exported component and composable share one module graph. Add this setting to the consuming application's existing Vite configuration:
 
 ```js
 export default defineConfig({
@@ -60,6 +59,8 @@ php artisan make:datasource Products
 Replace `app/DataSources/Products.php` with this fictional public catalog:
 
 ```php
+<?php
+
 namespace App\DataSources;
 
 use ArtisanToolbox\Dapter\Attributes\PublicAccess;
@@ -204,7 +205,7 @@ This changes an earlier preview's strict Collection and native SQL defaults. Opt
 
 ## Choose a source-specific comparison
 
-Inspect the installed preview for `Options\LocaleOptions`, `Options\FullTextOptions`, and `MatchType::FullText` before using them. Configure these policies on the server. Requests cannot select locale or parser settings.
+Configure locale ordering and full-text search on the server with `Options\LocaleOptions`, `Options\FullTextOptions`, and `MatchType::FullText`. Requests cannot select locale or parser settings.
 
 For a String Collection order, declare `SortType::Locale` and `options: new FieldOptions(locale: new LocaleOptions('pt-BR'))`. PHP intl and the requested available canonical locale are required. Keep another declared sort type when the source must remain usable without intl. Tertiary strength, normalization enabled, and numeric text collation disabled are fixed. Null comes first ascending and last descending. Equal values preserve input order. Composed and decomposed accents may compare equal, while literal search follows the independent source-owned sensitivity policy. Valid ICU parent fallback is allowed. Invented locales, keywords, invalid UTF-8, and Collator failures do not silently fall back. Cursor strings retain Native lexical comparison. See [Compare Collection values](https://atb.dev.br/docs/dapter/collection-comparisons).
 
@@ -244,13 +245,21 @@ Pass `decodeDefinition(definition)` independently of `decodeRow(row)`. Return a 
 
 ## Keep criteria in browser history
 
-Explicit protocol 2 enables URL persistence by default. Set `url: false` on the creator to disable it. V1 keeps URL persistence disabled. Use a durable explicit `id` for shared links. Automatic Vue owner IDs keep independent listings distinct, but depend on the component tree.
+The unreleased local preview uses UUID browser state for explicit protocol 2. Set `url: false` on its creator to disable persistence and sharing. Version 1 keeps persistence disabled and `share()` returns null.
 
-Dapter stores only source-bound, versioned requested criteria under `dapter[<id>]`. An absent namespace asks for authorized defaults. A valid namespace restores with one read. A malformed namespace reports local validation without reading the source. The server's acknowledged page normalizes the URL without another read. Unrelated parameters, fragments, other adapter namespaces, and Inertia page state remain intact.
+The URL contains a UUID under the source alias in snake case, such as `catalog_order_items`. An explicit owner `id` different from the source adds a `.id` suffix so two listings remain independent. Customize the source key with `StoreOptions::stateKey('catalog')`. Only requested criteria go into `localStorage`, under `dapter:state:<uuid>`. Rows, authorization, actions, and metadata are never saved.
 
-Search and normalization replace history. Page, size, order, and filter changes push history. Back and Forward restore criteria. Public Inertia client visits are asynchronous. An already accepted visit may briefly publish an obsolete URL or add a history entry before a guarded correction converges. The correction does not publish obsolete rows or issue another data read.
+Configure `dapter.state.ttl` with a positive integer number of minutes. The default is 240 minutes. Override a DataStore with `StoreOptions::stateTtl(30)` or `StoreOptions::stateTtl(now()->addHours(2))`. Pass a future Carbon deadline. Once reached, it disables new persistence without making the source unreadable. Mutable Carbon values are captured when the option is set. `makeWithoutDefaults()` uses 240 minutes independently of configuration. Each stored snapshot has a fixed expiration. Reload does not extend it.
 
-Pass `scrollContainer` as an HTMLElement, ref, or getter returning an element or null. Dapter resets only that container after a winning criteria, page, or size render. Reload preserves its offset. History restores its recorded offset after rendering. A temporarily null target does not fall back to the window. Dapter does not scroll the body.
+The source version hashes the DataStore class declaration, its ancestors, and its traits. A class change invalidates previous states and share links. Global configuration and external dependencies are outside this version hash. An initial authorized default read discovers the current policy and defaults. A valid stored or shared state then requires a second read. Missing, expired, malformed, or mismatched state is removed from the URL and falls back to defaults. Changing back to defaults removes the current stored snapshot and UUID. Older history snapshots remain available until expiration.
+
+Call `const link = catalog.share()` from a user action to create a portable absolute URL. It returns null before an accepted read, when URL persistence is disabled, or when the server does not negotiate browser state. It includes the accepted requested state and DataStore version as UTF-8 Base64URL with an `s1.` prefix. Opening that link checks the current source version and imports a fresh local UUID. `share()` does not navigate or copy to the clipboard. The `DataAdapter` slot and template ref expose the same function. Other known owners' browser-local references are omitted from the shared link.
+
+Base64 is an encoding. Share links expose their criteria to recipients and browser history. Every restored request still runs server authorization. A local UUID works only where that browser has its matching storage record. If storage is unavailable or full, reads continue without publishing a dangling UUID.
+
+Search and normalization replace history. Page, size, order, and filter changes push history. Back and Forward restore criteria. Public Inertia client visits are asynchronous. An already accepted visit may briefly publish an obsolete URL or add a history entry before a guarded correction converges. The correction does not publish obsolete rows or issue another data read. Unrelated query parameters, fragments, and Inertia page state remain intact.
+
+Pass `scrollContainer` as an HTMLElement, ref, or getter returning an element or null. Dapter resets only that container after a winning criteria, page, or size render. Reload preserves its offset. History restores its recorded offset after rendering. A temporarily null target does not fall back to the window. Dapter does not scroll the body. See [Save catalog navigation](https://atb.dev.br/docs/dapter/vue-navigation).
 
 ## Select a trusted driver
 
@@ -404,7 +413,7 @@ A custom driver opts into `Contracts\TraversalStoreDriver` and implements `trave
 
 ## Project rows through a Resource
 
-Inspect the installed preview for `StoreOptions::useResource()` and `Attributes\UseResource` before using them. Supply an instantiable per-row `JsonResource` subclass. Define its complete projected shape in `toArray(Request $request)` and use that request for visibility. Nested `JsonResource` and `ResourceCollection` values receive the same selected reader. Never replace the ambient request or change global wrapping.
+Pass an instantiable per-row `JsonResource` subclass to `StoreOptions::useResource()` or `Attributes\UseResource`. Define its complete projected shape in `toArray(Request $request)` and use that request for visibility. Nested `JsonResource` and `ResourceCollection` values receive the same selected reader. Never replace the ambient request or change global wrapping.
 
 Raw ID and revision extraction happens before projection, so the Resource can omit its ID. Metadata is separate from `decodeRow`, which receives projected data only. Explicit identifier metadata is a public disclosure. Existing actions inspect raw rows. Protocol 1 keeps its original envelope and never receives live metadata. The [Resource guide](https://atb.dev.br/docs/dapter/resources) contains fixed input, nested-reader examples, and expected results.
 
@@ -439,7 +448,6 @@ Polling defaults to false. Its exact interval object needs a finite value above 
 
 Call `resetContext()` synchronously when login, logout, impersonation, tenant, or permission context changes. It immediately clears protected rows, actions, listeners, pending work, and only its own saved requested snapshot, then reads fresh source defaults. No server can erase bytes already rendered in an uncooperative browser. Use [HTTP polling](https://atb.dev.br/docs/dapter/polling) for failure and restart behavior.
 
-
 ## Append an infinite window
 
 Use an explicit protocol 2 owner. Set `infinite: true` for manual forward accumulation. Offset remains the default paging mode. Add `paging: 'source'` when the source declares simple or cursor paging.
@@ -466,6 +474,10 @@ See [Append records vertically](https://atb.dev.br/docs/dapter/infinite-loading)
 
 ## Keep research separate from supported APIs
 
-Dapter does not expose vector MatchType or snapshot PagingMode controls. Current paging modes are offset, simple, and live cursor. Prepared native pgvector 0.8.7 experiments verified a real three-dimensional L2 column, scoped counts, exact rank, and raw SQL traversal. That SQL seek is not a Dapter cursor or authenticated token. Installed Laravel PostgreSQL helpers use cosine distance and text arguments can call the separate AI SDK. Do not infer an L2 package API or automatic embeddings support.
+The unreleased local preview supports exact PostgreSQL L2 vector filtering. Provision pgvector and a matching `vector(N)` column before declaring the field. Use `searchableField('embedding', [MatchType::Vector], options: new FieldOptions(vector: new VectorOptions(dimensions: 3, maxDistance: 1.0)))`. Import `Options\VectorOptions` and `Options\FieldOptions`. Submit `catalog.fields.embedding.search.call({ value: [0, 0, 0], matchType: 'vector' })` after the source advertises the capability. Clear with `search.clear()`, not an empty string.
+
+Vectors are dense arrays of exactly the configured 1 through 16,000 numeric coordinates. Every coordinate must be finite with magnitude at most 1,000,000. Dapter converts them to float32 and echoes the canonical values. The nonnegative distance threshold is inclusive. Null embeddings do not match. Existing source scopes, ordering, counts, and offset, simple, or cursor pagination still apply. Results retain the declared order rather than sorting by distance. Global search, Collection, SQLite, and MySQL do not support vector operations. Dapter does not create embeddings or call AI providers. See [PostgreSQL vector search](https://atb.dev.br/docs/dapter/vector-search).
+
+Snapshot PagingMode controls remain unavailable. Current paging modes are offset, simple, and live cursor. Historical research seeks ordered by distance are separate from the supported filter-only API.
 
 Persisted-key and frozen-output SQL experiments reproduce nine mutation scenarios, including unsafe primary-key reuse. They do not supply production authorization handles, generation identity, complete query and serializer checks, retention, quotas, cleanup, or a safe captured-field audience. A high-water identity bound does not freeze membership or values. Prefer the existing live paging APIs unless an application independently owns a complete stronger contract. See [Research findings](https://atb.dev.br/docs/dapter/research).

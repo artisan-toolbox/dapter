@@ -1,8 +1,10 @@
-import { http, router, type HttpRequestConfig, type HttpResponse } from '@inertiajs/core';
+import { http, type HttpRequestConfig, type HttpResponse } from '@inertiajs/core';
 import { afterEach, beforeEach, expect, it, vi } from 'vite-plus/test';
 import type { AdapterDefinition } from '@artisan-toolbox/dapter';
 import { parseDefinition } from '../../resources/js/protocol-v2.js';
 import { definition, intent, mount, page, settle } from './phase2-fixtures.js';
+
+import { browserAt, browserState, shareValue } from './browser-fixtures.js';
 
 const literalDefinition = {
     ...definition,
@@ -29,7 +31,7 @@ const request = vi.fn<(config: HttpRequestConfig) => Promise<HttpResponse>>();
 const cleanups: (() => void)[] = [];
 const respond = (state = intent()) => ({
     status: 200,
-    data: JSON.stringify(page(state, literalDefinition)),
+    data: JSON.stringify({ ...page(state, literalDefinition), browserState }),
     headers: {},
 });
 const sent = () => JSON.parse(String(request.mock.calls.at(-1)?.[0].data));
@@ -150,19 +152,9 @@ it('restores original field and global text from its URL namespace', async () =>
         global: { search: { value } },
     });
     const url = new URL('https://example.test/catalog?other=kept#rows');
-    url.searchParams.set(
-        'dapter[literal-policy]',
-        JSON.stringify({ version: 2, source: 'Products', state: restored }),
-    );
-    const location = { href: url.href };
-    vi.stubGlobal('window', Object.assign(new EventTarget(), { location }));
-    vi.stubGlobal('document', new EventTarget());
-    vi.spyOn(router, 'replace').mockImplementation((options) => {
-        location.href = String(options.url);
-        const onFinish = Reflect.get(options, 'onFinish');
-        if (typeof onFinish === 'function') Reflect.apply(onFinish, undefined, []);
-    });
-    request.mockResolvedValueOnce(respond(restored));
+    url.searchParams.set('catalog.literal-policy', shareValue('Products', restored));
+    const { location } = browserAt(url.href);
+    request.mockResolvedValueOnce(respond()).mockResolvedValueOnce(respond(restored));
     const { handle } = create({ id: 'literal-policy', url: true });
     await settle();
     expect(handle.ready).toBe(true);

@@ -9,5 +9,6 @@ use ArtisanToolbox\Dapter\Enums\ValueType;
 
 final readonly class SearchClause
 {
-    public function __construct(public string $field, public string $target, public string|int|float|bool $value, public MatchType $matchType, public ValueType $valueType) {}
+    /** @param string|int|float|bool|list<float> $value */
+    public function __construct(public string $field, public string $target, public string|int|float|bool|array $value, public MatchType $matchType, public ValueType $valueType) {}
 }

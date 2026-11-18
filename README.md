@@ -17,15 +17,14 @@
 </p>
 <!-- MAINTAINER:README_HEAD:END -->
 
-Dapter connects Laravel data sources to headless Vue listings. Add search, filters, sorting, pagination, and authorized actions to your own presentation. This is an unpublished local preview.
+Dapter connects Laravel data sources to headless Vue listings. Add search, filters, sorting, pagination, and authorized actions to your own presentation. The published alpha release is `1.0.0-alpha.1`.
 
 ## Installation
 
-For the local preview, place this checkout beside your Laravel application. From the application root, run:
+From the root of a Laravel 13 application with Inertia 3 and Vue, run Composer before npm.
 
 ```bash
-composer config repositories.dapter path ../dapter
-composer require artisan-toolbox/dapter:"1.x-dev@dev"
+composer require artisan-toolbox/dapter:1.0.0-alpha.1 tightenco/ziggy:"^2.6.5"
 npm pkg set 'dependencies.@artisan-toolbox/dapter=file:vendor/artisan-toolbox/dapter'
 npm install --install-links
 ```
@@ -35,6 +34,8 @@ npm install --install-links
 Complete the [installation guide](https://atb.dev.br/docs/dapter/installation), then create `app/DataSources/Products.php`:
 
 ```php
+<?php
+
 namespace App\DataSources;
 
 use ArtisanToolbox\Dapter\Attributes\PublicAccess;
@@ -75,7 +76,7 @@ After loading, the list displays Notebook and Pencil. The public attribute is ex
 
 ## Compatibility
 
-PHP ^8.5, Laravel ^13.0, Inertia Laravel ^3.0, Inertia Vue and Core ^3.0.3, Vue ^3.5.40, Ziggy ^2.6.5, and Node.js >=24.11.0 for frontend tooling. The source entry needs Vue-aware Vite and TypeScript tooling, plus `optimizeDeps.exclude` for `@artisan-toolbox/dapter` during development. Follow the [installation guide](https://atb.dev.br/docs/dapter/installation) for the consuming application's Vite configuration. Set `protocol: 2` for declared field controls. Follow the [feature guides](https://atb.dev.br/docs/dapter) for other opt-ins. The preview uses `1.x` and has no stable release.
+PHP ^8.5, Laravel ^13.0, Inertia Laravel ^3.0, Inertia Vue and Core ^3.0.3, Vue ^3.5.40, Ziggy ^2.6.5, and Node.js >=24.11.0 for frontend tooling. The source entry needs Vue-aware Vite and TypeScript tooling, plus `optimizeDeps.exclude` for `@artisan-toolbox/dapter` during development. Follow the [installation guide](https://atb.dev.br/docs/dapter/installation) for the consuming application's Vite configuration. Set `protocol: 2` for declared field controls. Follow the [feature guides](https://atb.dev.br/docs/dapter) for other opt-ins. The public API can change during the alpha series.
 
 ## Documentation and policies
 

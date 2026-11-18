@@ -10,7 +10,6 @@ import {
     shallowRef,
     watch,
     toValue,
-    useId,
     type ComputedRef,
     type InjectionKey,
     type MaybeRefOrGetter,
@@ -118,9 +117,8 @@ function create(
     };
     if (options.id !== undefined && options.id.trim() === '')
         throw new Error('An adapter id must not be empty.');
-    const identity = options.id ?? useId();
     const scope = effectScope(true);
-    const controller = scope.run(() => createController(ownerProps, identity));
+    const controller = scope.run(() => createController(ownerProps));
     if (!controller) throw new Error('The adapter owner scope could not be created.');
     const handle = facade(controller.state);
     let disposed = false;

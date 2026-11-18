@@ -24,6 +24,15 @@ it('retains offset defaults and narrows source paging in creators, borrowers and
         expectTypeOf(owner.paging).toEqualTypeOf<SourcePaging>();
         const component = DataAdapter({ adapter: borrower });
         type Slot = Parameters<NonNullable<typeof component.__ctx>['slots']['default']>[0];
+        expectTypeOf(owner.share()).toEqualTypeOf<string | null>();
+        expectTypeOf<Slot['share']>().toEqualTypeOf<() => string | null>();
+        type Exposed = Parameters<NonNullable<typeof component.__ctx>['expose']>[0];
+        expectTypeOf<Exposed['share']>().toEqualTypeOf<() => string | null>();
+        const sourceComponent = DataAdapter({ source: 'Feed', protocol: 2, paging: 'source' });
+        type SourceSlot = Parameters<
+            NonNullable<typeof sourceComponent.__ctx>['slots']['default']
+        >[0];
+        expectTypeOf<SourceSlot['share']>().toEqualTypeOf<() => string | null>();
         expectTypeOf<Slot['paging']>().toEqualTypeOf<SourcePaging>();
         // @ts-expect-error Advanced source handles cannot be erased into offset handles.
         const erased: DataAdapterHandle = borrower;

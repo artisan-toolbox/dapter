@@ -26,6 +26,7 @@ export type {
     FieldDefinition,
     SearchDefinition,
     FullTextPolicy,
+    VectorPolicy,
     LocalePolicy,
     OrderDefinition,
     FilterDefinition,

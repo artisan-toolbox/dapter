@@ -58,20 +58,20 @@ final class FieldOptionsResolver
             if ($definition instanceof SearchDefinition) {
                 self::fullText(in_array(MatchType::FullText, $definition->matchTypes, true), $settings?->fullText);
 
-                if ($settings?->locale !== null) {
+                if (in_array(MatchType::Vector, $definition->matchTypes, true) !== ($settings?->vector !== null) || $settings?->vector !== null && ($definition->matchTypes !== [MatchType::Vector] || $definition->valueType !== ValueType::String) || $settings?->locale !== null) {
                     throw DapterException::configuration();
                 }
             } elseif ($definition instanceof OrderDefinition) {
                 $locale = in_array(SortType::Locale, $definition->sortTypes, true);
 
-                if ($locale !== ($settings?->locale !== null) || $settings?->fullText !== null || $locale && $definition->valueType !== null && $definition->valueType !== ValueType::String) {
+                if ($locale !== ($settings?->locale !== null) || $settings?->fullText !== null || $settings?->vector !== null || $locale && $definition->valueType !== null && $definition->valueType !== ValueType::String) {
                     throw DapterException::configuration();
                 }
 
                 if ($settings?->locale !== null && ! preg_match('/\A[a-zA-Z]{2,3}(?:[-_][a-zA-Z]{4})?(?:[-_](?:[a-zA-Z]{2}|[0-9]{3}))?\z/D', $settings->locale->locale)) {
                     throw DapterException::configuration();
                 }
-            } elseif ($settings?->locale !== null || $settings?->fullText !== null) {
+            } elseif ($settings?->locale !== null || $settings?->fullText !== null || $settings?->vector !== null) {
                 throw DapterException::configuration();
             }
             $output = $settings?->output;

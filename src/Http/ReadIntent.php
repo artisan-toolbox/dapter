@@ -21,6 +21,7 @@ use ArtisanToolbox\Dapter\Enums\SortType;
 use ArtisanToolbox\Dapter\Options\ResolvedStoreOptions;
 use ArtisanToolbox\Dapter\Support\ScalarValue;
 use ArtisanToolbox\Dapter\Support\TrustedHandlerBinder;
+use ArtisanToolbox\Dapter\Support\VectorValue;
 use JsonException;
 use stdClass;
 
@@ -200,7 +201,9 @@ final readonly class ReadIntent
                 if ($field->search === null || $match === null || ! in_array($match, $field->search->matchTypes, true)) {
                     throw DapterException::unsupported();
                 }
-                $value = ScalarValue::search($search->value, $field->search->valueType);
+                $value = $match === MatchType::Vector
+                    ? VectorValue::normalize($search->value, $field->search->options->vector ?? throw DapterException::configuration())
+                    : ScalarValue::search($search->value, $field->search->valueType);
 
                 if ($value === null || is_string($value) && preg_match('//u', $value) !== 1) {
                     throw DapterException::validation();
@@ -212,7 +215,7 @@ final readonly class ReadIntent
 
                 if ($value !== '') {
                     $searches[] = new SearchClause($name, $field->target, $value, $match, $field->search->valueType);
-                    $normalized->search = ['value' => $search->value, 'matchType' => $match->value];
+                    $normalized->search = ['value' => $match === MatchType::Vector ? $value : $search->value, 'matchType' => $match->value];
                 }
             }
 

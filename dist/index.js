@@ -1,4 +1,4 @@
-import { computed, createCommentVNode, defineComponent, effectScope, getCurrentInstance, guardReactiveProps, inject, isRef, nextTick, normalizeProps, onBeforeUnmount, onMounted, provide, renderSlot, shallowRef, toValue, unref, useId, watch } from "vue";
+import { computed, createCommentVNode, defineComponent, effectScope, getCurrentInstance, guardReactiveProps, inject, isRef, nextTick, normalizeProps, onBeforeUnmount, onMounted, provide, renderSlot, shallowRef, toValue, unref, watch } from "vue";
 import { HttpNetworkError, router } from "@inertiajs/core";
 import { useHttp, usePage } from "@inertiajs/vue3";
 import { route } from "ziggy-js";
@@ -1089,7 +1089,7 @@ function scalar(value) {
 	throw new Error("Invalid scalar");
 }
 function match(value) {
-	if (value === "contains" || value === "equals" || value === "starts_with" || value === "ends_with" || value === "full_text") return value;
+	if (value === "contains" || value === "equals" || value === "starts_with" || value === "ends_with" || value === "full_text" || value === "vector") return value;
 	throw new Error("Invalid match");
 }
 function sort(value) {
@@ -1146,13 +1146,59 @@ function parseLocale(value) {
 		numeric: false
 	};
 }
+function parseVectorPolicy(value) {
+	const input = object(value);
+	exact(input, [
+		"engine",
+		"metric",
+		"dimensions",
+		"maxDistance",
+		"input",
+		"precision",
+		"maxCoordinateMagnitude",
+		"threshold",
+		"ranking"
+	]);
+	if (input.engine !== "pgsql" || input.metric !== "l2" || typeof input.dimensions !== "number" || !Number.isSafeInteger(input.dimensions) || input.dimensions < 1 || input.dimensions > 16e3 || typeof input.maxDistance !== "number" || !Number.isFinite(input.maxDistance) || input.maxDistance < 0 || input.maxDistance > Number.MAX_SAFE_INTEGER || input.input !== "prepared_vector" || input.precision !== "float32" || input.maxCoordinateMagnitude !== 1e6 || input.threshold !== "inclusive" || input.ranking !== "filter_only") throw new Error("Invalid vector policy");
+	return {
+		engine: "pgsql",
+		metric: "l2",
+		dimensions: input.dimensions,
+		maxDistance: input.maxDistance,
+		input: "prepared_vector",
+		precision: "float32",
+		maxCoordinateMagnitude: 1e6,
+		threshold: "inclusive",
+		ranking: "filter_only"
+	};
+}
+function parseVector(value, policy) {
+	if (!Array.isArray(value) || value.length < 1 || value.length > 16e3 || policy && value.length !== policy.dimensions) throw new Error("Invalid vector dimensions");
+	return Array.from(value, (coordinate) => {
+		if (typeof coordinate !== "number" || !Number.isFinite(coordinate) || Math.abs(coordinate) > 1e6) throw new Error("Invalid vector coordinate");
+		return Math.fround(coordinate);
+	});
+}
 function parseSearch(value) {
 	if (value === null) return null;
 	const input = object(value);
-	exact(input, ["matchTypes", "valueType"], ["fullText"]);
+	exact(input, ["matchTypes", "valueType"], ["fullText", "vector"]);
+	if (input.valueType === "vector") {
+		if (!Array.isArray(input.matchTypes) || input.matchTypes.length !== 1 || input.matchTypes[0] !== "vector" || Object.hasOwn(input, "fullText")) throw new Error("Invalid vector search");
+		return {
+			valueType: "vector",
+			matchTypes: ["vector"],
+			vector: parseVectorPolicy(input.vector)
+		};
+	}
+	if (Object.hasOwn(input, "vector")) throw new Error("Mismatched vector policy");
 	const valueType = input.valueType;
 	if (valueType !== "string" && valueType !== "integer" && valueType !== "number") throw new Error("Invalid value type");
-	const matchTypes = list(input.matchTypes, match);
+	const matchTypes = list(input.matchTypes, (value) => {
+		const parsed = match(value);
+		if (parsed === "vector") throw new Error("Mismatched vector search");
+		return parsed;
+	});
 	if (valueType !== "string" && (matchTypes.length !== 1 || matchTypes[0] !== "equals")) throw new Error("Invalid search");
 	if (matchTypes.includes("full_text") !== Object.hasOwn(input, "fullText")) throw new Error("Mismatched full-text policy");
 	return {
@@ -1254,10 +1300,12 @@ function parseDefinition(value) {
 				matchTypes: [target.matchType],
 				...Object.hasOwn(target, "fullText") ? { fullText: target.fullText } : {}
 			});
-			if (!parsed) throw new Error("Invalid target");
+			if (!parsed || parsed.valueType === "vector") throw new Error("Invalid target");
+			const targetMatch = match(target.matchType);
+			if (targetMatch === "vector") throw new Error("Invalid global vector search");
 			targets[id] = {
 				valueType: parsed.valueType,
-				matchType: match(target.matchType),
+				matchType: targetMatch,
 				...parsed.fullText ? { fullText: parsed.fullText } : {}
 			};
 		}
@@ -1392,13 +1440,22 @@ function parseRequestedV2(value, definition) {
 		if (Object.hasOwn(field, "search")) {
 			const selection = object(field.search);
 			exact(selection, ["value", "matchType"]);
-			const value = scalar(selection.value), matchType = match(selection.matchType);
-			if (typeof value !== "string" && typeof value !== "number" || capability && (!capability.search || !capability.search.matchTypes.includes(matchType) || !validSearchValue(value, capability.search.valueType))) throw new Error("Invalid search");
-			if (matchType === "full_text" && !validFullTextInput(value)) throw new Error("Invalid full-text input");
-			if (value !== "") search = {
-				value,
-				matchType
-			};
+			const matchType = match(selection.matchType);
+			if (matchType === "vector") {
+				if (capability && capability.search?.valueType !== "vector") throw new Error("Unavailable vector search");
+				search = {
+					value: parseVector(selection.value, capability?.search?.vector),
+					matchType
+				};
+			} else {
+				const value = scalar(selection.value);
+				if (typeof value !== "string" && typeof value !== "number" || capability && (!capability.search || !capability.search.matchTypes.some((available) => available === matchType) || !validSearchValue(value, capability.search.valueType))) throw new Error("Invalid search");
+				if (matchType === "full_text" && !validFullTextInput(value)) throw new Error("Invalid full-text input");
+				if (value !== "") search = {
+					value,
+					matchType
+				};
+			}
 		}
 		const filters = dictionary();
 		if (Object.hasOwn(field, "filters")) for (const [id, rawFilter] of Object.entries(object(field.filters))) {
@@ -1529,7 +1586,7 @@ function assertNarrowing(original, narrowed) {
 		if (!field) continue;
 		const source = original.fields[name];
 		if (!source) throw new Error("Expanded field");
-		if (field.search && (!source.search || field.search.valueType !== source.search.valueType || field.search.matchTypes.some((value) => !source.search?.matchTypes.includes(value)) || field.search.matchTypes.includes("full_text") && JSON.stringify(field.search.fullText) !== JSON.stringify(source.search.fullText))) throw new Error("Expanded search");
+		if (field.search && (!source.search || field.search.valueType !== source.search.valueType || field.search.matchTypes.some((value) => !source.search?.matchTypes.some((available) => available === value)) || field.search.matchTypes.some((matchType) => matchType === "full_text") && JSON.stringify(field.search.fullText) !== JSON.stringify(source.search.fullText) || JSON.stringify(field.search.vector) !== JSON.stringify(source.search.vector))) throw new Error("Expanded search");
 		if (field.order && (!source.order || field.order.sortTypes.some((value) => !source.order?.sortTypes.includes(value)) || field.order.directions.some((value) => !source.order?.directions.includes(value)) || field.order.sortTypes.includes("locale") && JSON.stringify(field.order.locale) !== JSON.stringify(source.order.locale))) throw new Error("Expanded order");
 		for (const [id, filter] of Object.entries(field.filters ?? {})) {
 			if (!filter) continue;
@@ -1537,6 +1594,22 @@ function assertNarrowing(original, narrowed) {
 			if (!sourceFilter || sourceFilter.multiple !== filter.multiple || filter.multiple && (!sourceFilter.multiple || sourceFilter.empty !== filter.empty) || filter.values.some((value) => !sourceFilter.values.includes(value))) throw new Error("Expanded filter");
 		}
 	}
+}
+function parseBrowserState(value) {
+	const policy = object(value);
+	exact(policy, [
+		"key",
+		"version",
+		"expiration"
+	]);
+	if (typeof policy.key !== "string" || policy.key.trim() === "" || typeof policy.version !== "string" || !/^[a-f0-9]{64}$/.test(policy.version)) throw new Error("Invalid browser state policy");
+	const deadline = object(policy.expiration);
+	exact(deadline, ["at" in deadline ? "at" : "minutes"]);
+	return {
+		key: policy.key,
+		version: policy.version,
+		expiration: "at" in deadline ? { at: positive(deadline.at) } : { minutes: positive(deadline.minutes) }
+	};
 }
 function parsePageV2(value) {
 	const input = object(value);
@@ -1548,7 +1621,8 @@ function parsePageV2(value) {
 		"paging",
 		"capabilities",
 		"metadata"
-	], ["actions"]);
+	], ["actions", "browserState"]);
+	const browserState = Object.hasOwn(input, "browserState") ? { browserState: parseBrowserState(input.browserState) } : {};
 	if (input.version !== 2) throw new Error("Invalid version");
 	const definition = parseDefinition(input.capabilities), requested = parseRequestedV2(input.requested, definition);
 	const state = object(input.state);
@@ -1619,6 +1693,7 @@ function parsePageV2(value) {
 		validateJson(input.data);
 		if (paging.mode === "cursor" && input.data.length === 0 && (paging.has_previous || paging.has_next)) throw new Error("Invalid empty cursor window");
 		return freeze({
+			...browserState,
 			data: input.data,
 			requested,
 			state: {
@@ -1632,7 +1707,7 @@ function parsePageV2(value) {
 			...Object.hasOwn(input, "actions") ? { actions: parseActions(input.actions) } : {}
 		});
 	}
-	const { metadata: _metadata, ...base } = input;
+	const { metadata: _metadata, browserState: _policy, ...base } = input;
 	return freeze({
 		...parsePage({
 			...base,
@@ -1665,6 +1740,7 @@ function parsePageV2(value) {
 				paging: definition.paging
 			}
 		}),
+		...browserState,
 		requested,
 		state: {
 			order: acceptedOrder,
@@ -2094,9 +2170,115 @@ function subscribe(echo, descriptor, update, failed) {
 		channel.stopListening(descriptor.event, update);
 	};
 }
+// resources/js/browser-snapshots.ts
+const prefix = "dapter:state:";
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function deadline(policy, now) {
+	return "at" in policy.expiration ? policy.expiration.at : Math.min(Number.MAX_SAFE_INTEGER, now + policy.expiration.minutes * 6e4);
+}
+function portable(value) {
+	const encoded = value.slice(3);
+	if (!/^[A-Za-z0-9_-]+$/.test(encoded)) throw new Error("Invalid portable state");
+	const bytes = Uint8Array.from(atob(encoded.replace(/-/g, "+").replace(/_/g, "/")), (char) => char.charCodeAt(0));
+	return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+}
+function shareToken(source, version, state) {
+	const bytes = new TextEncoder().encode(JSON.stringify({
+		source,
+		version,
+		state
+	}));
+	const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
+	return "s1." + btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function readSnapshot(raw, source, policy, definition) {
+	const now = Date.now();
+	if (!raw || now >= deadline(policy, now)) return null;
+	try {
+		let record;
+		if (raw.startsWith("s1.")) {
+			record = object(portable(raw));
+			exact(record, [
+				"source",
+				"version",
+				"state"
+			]);
+		} else {
+			if (!uuid.test(raw)) return null;
+			record = object(JSON.parse(window.localStorage.getItem(prefix + raw) ?? "null"));
+			exact(record, [
+				"source",
+				"version",
+				"state",
+				"expiresAt"
+			]);
+			if (typeof record.expiresAt !== "number" || !Number.isSafeInteger(record.expiresAt) || record.expiresAt <= now) return null;
+		}
+		return record.source === source && record.version === policy.version ? parseRequestedV2(record.state, definition) : null;
+	} catch {
+		return null;
+	}
+}
+function newId() {
+	if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+	const bytes = crypto.getRandomValues(/* @__PURE__ */ new Uint8Array(16));
+	bytes[6] = bytes[6] & 15 | 64;
+	bytes[8] = bytes[8] & 63 | 128;
+	const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+	return [
+		hex.slice(0, 8),
+		hex.slice(8, 12),
+		hex.slice(12, 16),
+		hex.slice(16, 20),
+		hex.slice(20)
+	].join("-");
+}
+function writeSnapshot(source, policy, state) {
+	const now = Date.now();
+	const expiresAt = deadline(policy, now);
+	if (expiresAt <= now) return null;
+	try {
+		sweepSnapshots(source, policy);
+		const id = newId();
+		window.localStorage.setItem(prefix + id, JSON.stringify({
+			source,
+			version: policy.version,
+			state,
+			expiresAt
+		}));
+		return id;
+	} catch {
+		return null;
+	}
+}
+function removeSnapshot(id, source) {
+	if (!id || !uuid.test(id)) return;
+	try {
+		const store = window.localStorage;
+		if (object(JSON.parse(store.getItem(prefix + id) ?? "null")).source === source) store.removeItem(prefix + id);
+	} catch {}
+}
+function sweepSnapshots(source, policy) {
+	try {
+		const store = window.localStorage;
+		const keys = Array.from({ length: store.length }, (_, i) => store.key(i));
+		const now = Date.now();
+		for (const key of keys) {
+			if (!key?.startsWith(prefix) || !uuid.test(key.slice(13))) continue;
+			try {
+				const record = object(JSON.parse(store.getItem(key) ?? "null"));
+				if (record.source === source && (record.version !== policy.version || typeof record.expiresAt !== "number" || !Number.isSafeInteger(record.expiresAt) || record.expiresAt <= now || deadline(policy, now) <= now)) store.removeItem(key);
+			} catch {}
+		}
+	} catch {}
+}
 // resources/js/browser.ts
+var BrowserKeyConflict = class extends Error {
+	constructor(key) {
+		super(`Another URL-enabled adapter already uses the query key "${key}". Choose an independent adapter id or state key.`);
+	}
+};
 const owners = /* @__PURE__ */ new Map();
-const retired = /* @__PURE__ */ new Map();
 const positions = /* @__PURE__ */ new Map();
 let queue = Promise.resolve();
 let navigation = 0;
@@ -2160,18 +2342,21 @@ function clientVisit(url, replace) {
 	});
 }
 async function publish(owner, value, replace, current) {
+	let committed = false;
 	const epoch = navigation;
 	pendingWrites++;
 	const task = queue.then(async () => {
 		if (!owner.alive || owners.get(owner.key) !== owner || !current() || epoch !== navigation) return;
 		const target = patch(window.location.href, owner.key, value);
 		if (target === window.location.href) {
+			committed = true;
 			owner.settled = value;
 			owner.lastUrl = target;
 			return;
 		}
 		await clientVisit(target, replace);
 		if (owner.alive && owners.get(owner.key) === owner && current() && epoch === navigation && window.location.href === target) {
+			committed = true;
 			owner.settled = value;
 			owner.lastUrl = target;
 			authoritativeUrl = target;
@@ -2195,48 +2380,20 @@ async function publish(owner, value, replace, current) {
 	});
 	queue = task;
 	await task;
-}
-function decode$2(url, key, source) {
-	const raw = url.searchParams.get(key);
-	if (raw === null) return {
-		snapshot: null,
-		invalid: false
-	};
-	try {
-		const value = JSON.parse(raw);
-		if (typeof value !== "object" || value === null || Array.isArray(value) || !("version" in value) || value.version !== 2 || !("source" in value) || value.source !== source || !("state" in value) || Object.keys(value).length !== 3) return {
-			snapshot: null,
-			invalid: true
-		};
-		return {
-			snapshot: parseRequestedV2(value.state),
-			invalid: false
-		};
-	} catch {
-		return {
-			snapshot: null,
-			invalid: true
-		};
-	}
-}
-function encode(source, state) {
-	return JSON.stringify({
-		version: 2,
-		source,
-		state
-	});
+	return committed;
 }
 function createBrowser(options) {
-	let started = false;
 	let disposed = false;
 	let popped = false;
 	let restoredPosition;
 	let stopHistory;
-	let interacted = false;
-	const key = `dapter[${options.id}]`;
+	let configured = false;
+	let policy;
+	let definition;
+	let defaults;
+	let lastSignature;
 	const owner = {
-		source: options.source,
-		key,
+		key: "",
 		alive: false,
 		settled: null,
 		lastUrl: "",
@@ -2246,7 +2403,7 @@ function createBrowser(options) {
 		return options.scrollContainer === void 0 ? null : toValue(options.scrollContainer);
 	}
 	function positionKey(url) {
-		return `${options.source}\n${key}\n${url}`;
+		return `${options.source}\n${owner.key}\n${url}`;
 	}
 	function save() {
 		const element = container();
@@ -2268,73 +2425,78 @@ function createBrowser(options) {
 		save();
 		popped = true;
 	}
+	function candidate() {
+		if (!owner.alive || !policy || !definition) return null;
+		const state = readSnapshot(owner.settled, options.source, policy, definition);
+		return state && stateKey(state) !== defaults ? state : null;
+	}
 	function restore() {
 		if (!popped || !owner.alive) return;
 		popped = false;
 		const url = new URL(window.location.href);
-		const candidate = decode$2(url, key, options.source);
+		const raw = url.searchParams.get(owner.key);
 		restoredPosition = positions.get(positionKey(url.href));
-		const same = owner.settled === url.searchParams.get(key) && owner.guard?.();
-		owner.settled = url.searchParams.get(key);
+		const same = owner.settled === raw && owner.guard?.();
+		owner.settled = raw;
 		owner.lastUrl = url.href;
-		interacted = owner.settled !== null;
-		if (candidate.invalid) options.onInvalid();
-		else if (!same) options.onRestore(candidate.snapshot);
-		else nextTick().then(() => {
+		const snapshot = candidate();
+		if (!same || raw !== null && !snapshot) {
+			lastSignature = void 0;
+			options.onRestore(snapshot);
+		} else nextTick().then(() => {
 			if (owner.alive) restorePosition();
 		});
 	}
 	return {
-		start() {
-			if (started || disposed || typeof window === "undefined") return {
-				snapshot: null,
-				invalid: false
-			};
-			started = true;
-			if (!options.enabled) return {
-				snapshot: null,
-				invalid: false
-			};
-			if (owners.get(key)?.alive) throw new Error("URL-enabled adapters require independent identifiers.");
-			owner.alive = true;
-			owner.lastUrl = window.location.href;
-			restoredPosition = positions.get(positionKey(owner.lastUrl));
-			owner.settled = new URL(owner.lastUrl).searchParams.get(key);
-			owners.set(key, owner);
-			observe();
-			window.addEventListener("popstate", onPop);
-			stopHistory = router.on("navigate", restore);
-			const candidate = decode$2(new URL(owner.lastUrl), key, options.source);
-			const previousSource = retired.get(key);
-			retired.delete(key);
-			if (candidate.invalid && previousSource !== void 0 && previousSource !== options.source) {
-				owner.settled = null;
-				return {
-					snapshot: null,
-					invalid: false
-				};
+		version: () => policy?.version,
+		changed(next) {
+			return configured && (policy?.key !== next?.key || policy?.version !== next?.version);
+		},
+		configure(next, capabilities, defaultState) {
+			configured = true;
+			policy = next;
+			definition = capabilities;
+			if (defaultState) defaults = stateKey(defaultState);
+			if (disposed || !options.enabled || !policy || typeof window === "undefined") return;
+			if (!owner.alive) {
+				const key = options.id === void 0 || options.id === options.source ? policy.key : `${policy.key}.${options.id}`;
+				if (owners.has(key)) throw new BrowserKeyConflict(key);
+				owner.key = key;
+				owner.alive = true;
+				owner.lastUrl = window.location.href;
+				restoredPosition = positions.get(positionKey(owner.lastUrl));
+				owner.settled = new URL(owner.lastUrl).searchParams.get(key);
+				owners.set(key, owner);
+				observe();
+				window.addEventListener("popstate", onPop);
+				stopHistory = router.on("navigate", restore);
 			}
-			return candidate;
+			if (defaultState) sweepSnapshots(options.source, policy);
+		},
+		candidate,
+		share(snapshot) {
+			if (!owner.alive || !policy || !defaults) return null;
+			const target = new URL(window.location.href);
+			for (const key of owners.keys()) target.searchParams.delete(key);
+			if (stateKey(snapshot) !== defaults) target.searchParams.set(owner.key, shareToken(options.source, policy.version, snapshot));
+			return target.href;
 		},
 		async publish(snapshot, reason, current) {
 			if (disposed || !current()) return;
 			save();
 			owner.guard = current;
-			if (options.enabled && owner.alive && typeof window !== "undefined") {
-				if (![
-					"initial",
-					"history",
-					"reload",
-					"append"
-				].includes(reason)) interacted = reason !== "reset";
-				const absent = [
-					"initial",
-					"history",
-					"reload",
-					"append"
-				].includes(reason) && owner.settled === null && !interacted;
-				const value = snapshot === null || absent ? null : encode(options.source, snapshot);
-				await publish(owner, value, [
+			if (owner.alive && policy && definition) {
+				const previous = owner.settled;
+				const signature = stateKey(snapshot);
+				const isDefault = snapshot === null || signature === defaults;
+				const existing = !isDefault && previous !== null && !previous.startsWith("s1.") ? readSnapshot(previous, options.source, policy, definition) : null;
+				let created = null;
+				let value = null;
+				if (!isDefault && snapshot) {
+					if (existing && stateKey(existing) === signature) value = previous;
+					else if (lastSignature !== signature || previous?.startsWith("s1.")) value = created = writeSnapshot(options.source, policy, snapshot);
+				}
+				if (!await publish(owner, value, [
 					"initial",
 					"history",
 					"reload",
@@ -2342,16 +2504,16 @@ function createBrowser(options) {
 					"replace",
 					"reset",
 					"append"
-				].includes(reason), current);
+				].includes(reason), current)) removeSnapshot(created, options.source);
+				else {
+					lastSignature = signature;
+					if (isDefault || value === null && !existing) removeSnapshot(previous, options.source);
+				}
 			}
 			await nextTick();
 			if (disposed || !current()) return;
 			if (reason === "history" || reason === "initial") restorePosition();
-			else if (![
-				"initial",
-				"reload",
-				"append"
-			].includes(reason)) {
+			else if (!["reload", "append"].includes(reason)) {
 				const element = container();
 				if (element) {
 					element.scrollTop = 0;
@@ -2359,24 +2521,22 @@ function createBrowser(options) {
 				}
 			}
 		},
-		reset() {
-			interacted = false;
+		async reset() {
 			restoredPosition = void 0;
-			for (const position of positions.keys()) if (position.startsWith(`${options.source}\n${key}\n`)) positions.delete(position);
-			owner.settled = null;
-			if (typeof window === "undefined" || !options.enabled || !owner.alive) return Promise.resolve();
-			return publish(owner, null, true, () => !disposed && owner.alive);
+			for (const position of positions.keys()) if (position.startsWith(`${options.source}\n${owner.key}\n`)) positions.delete(position);
+			if (!owner.alive) return;
+			const previous = owner.settled;
+			if (await publish(owner, null, true, () => !disposed && owner.alive)) {
+				removeSnapshot(previous, options.source);
+				lastSignature = void 0;
+			}
 		},
 		dispose() {
 			if (disposed) return;
 			save();
 			disposed = true;
 			owner.alive = false;
-			if (owners.get(key) === owner) owners.delete(key);
-			retired.set(key, options.source);
-			queueMicrotask(() => {
-				if (retired.get(key) === options.source) retired.delete(key);
-			});
+			if (owners.get(owner.key) === owner) owners.delete(owner.key);
 			if (typeof window !== "undefined") window.removeEventListener("popstate", onPop);
 			stopHistory?.();
 			releaseObserver();
@@ -2525,7 +2685,7 @@ function projectGlobal(definition, requested, apply) {
 		} : null
 	});
 }
-function createV2Controller(props, identity) {
+function createV2Controller(props) {
 	if (props.searchDebounce !== void 0 && (!Number.isSafeInteger(props.searchDebounce) || props.searchDebounce < 0)) throw new Error("searchDebounce must be a nonnegative integer.");
 	const session = shallowRef({
 		accepted: null,
@@ -2780,55 +2940,21 @@ function createV2Controller(props, identity) {
 			old.settle({ status: "superseded" });
 		}
 	}
-	function localError() {
-		session.value = {
-			...session.value,
-			error: Object.freeze({
-				kind: "validation",
-				code: "invalid_state",
-				message: "The saved adapter state is invalid."
-			}),
-			status: "error"
-		};
-	}
-	function parseSaved(snapshot) {
-		if (snapshot === null) return null;
-		const restored = parseRequestedV2(snapshot, session.value.accepted?.definition);
-		if (props.paging !== "source" && restored.paging.mode !== "offset") throw new Error("Source paging requires opt-in");
-		return restored;
-	}
 	function makeBrowser() {
 		return createBrowser({
 			source: props.source,
-			id: identity,
+			id: props.id,
 			enabled: props.url !== false,
 			scrollContainer: () => props.scrollContainer === void 0 ? null : toValue(props.scrollContainer),
 			onRestore(snapshot) {
 				invalidate();
-				try {
-					submit(parseSaved(snapshot), true, 0, "history");
-				} catch {
-					localError();
-				}
-			},
-			onInvalid() {
-				invalidate();
-				localError();
+				submit(snapshot, true, 0, "history");
 			}
 		});
 	}
 	let browser = makeBrowser();
 	function initial() {
-		const saved = browser.start();
-		if (saved.invalid) {
-			localError();
-			return;
-		}
-		try {
-			submit(parseSaved(saved.snapshot), true, 0, "initial");
-		} catch {
-			localError();
-		}
+		submit(null, true, 0, "initial");
 	}
 	function submit(state, force = false, delay = 0, reason = "replace", explicit = true, settledOutcome = false) {
 		if (!mounted) return superseded();
@@ -2879,6 +3005,11 @@ function createV2Controller(props, identity) {
 			};
 			infiniteState.value = "loading";
 		}
+		function followRead(target, nextReason) {
+			pending = null;
+			appendOperation = null;
+			submit(target, true, 0, nextReason, explicit, settledOutcome).then(resolve);
+		}
 		async function run() {
 			if (!mounted || active !== generation) return;
 			work = {
@@ -2890,8 +3021,13 @@ function createV2Controller(props, identity) {
 				state
 			} : { version: 2 }).withAllErrors();
 			let rejected = null, received = false;
+			const expectedVersion = state && props.url !== false ? browser.version() : void 0;
 			try {
 				const response = await form.post(route("dapter.data", { source: props.source }), {
+					...props.url !== false ? { headers: {
+						"X-Dapter-Browser-State": "1",
+						...expectedVersion ? { "X-Dapter-State-Version": expectedVersion } : {}
+					} } : {},
 					onError: (errors) => {
 						rejected = validationFailure(errors, 2);
 					},
@@ -2918,11 +3054,40 @@ function createV2Controller(props, identity) {
 				if (rejected) throw rejected;
 				received = true;
 				const page = parsePageV2(response);
+				let effectiveState = state;
+				let completedReason = pending?.promise === promise ? pending.reason : reason;
+				if (props.url !== false && browser.changed(page.browserState)) {
+					await browser.reset();
+					if (!mounted || active !== generation) return;
+					browser.dispose();
+					browser = makeBrowser();
+					clearLive();
+					const serverDiscardedState = expectedVersion !== null && page.browserState !== void 0 && expectedVersion !== page.browserState.version;
+					if (state && !serverDiscardedState) {
+						followRead(null, "reset");
+						return;
+					}
+					effectiveState = null;
+					completedReason = "reset";
+				}
 				if (props.paging !== "source" && page.paging.mode !== "offset") throw new Error("Source paging requires opt-in");
-				if (state && state.paging.mode !== page.requested.paging.mode) throw new Error("Mismatched requested mode");
-				if (page.requested.paging.mode === "cursor" && page.requested.paging.cursor !== (state?.paging.mode === "cursor" ? state.paging.cursor : null)) throw new Error("Mismatched incoming cursor");
-				if (state?.paging.mode === "simple" && (page.requested.paging.mode !== "simple" || page.requested.paging.current !== state.paging.current)) throw new Error("Mismatched simple ordinal");
-				const result = acceptWindow(session.value.accepted, decode$1(page, props), reason === "append", infiniteEnabled);
+				if (effectiveState && effectiveState.paging.mode !== page.requested.paging.mode) throw new Error("Mismatched requested mode");
+				if (page.requested.paging.mode === "cursor" && page.requested.paging.cursor !== (effectiveState?.paging.mode === "cursor" ? effectiveState.paging.cursor : null)) throw new Error("Mismatched incoming cursor");
+				if (effectiveState?.paging.mode === "simple" && (page.requested.paging.mode !== "simple" || page.requested.paging.current !== effectiveState.paging.current)) throw new Error("Mismatched simple ordinal");
+				const decoded = decode$1(page, props);
+				browser.configure(page.browserState, decoded.definition, effectiveState ? null : page.requested);
+				if (!effectiveState && completedReason === "initial") {
+					const candidate = browser.candidate();
+					if (candidate) {
+						followRead(candidate, "initial");
+						return;
+					}
+				}
+				if (effectiveState && (reason === "initial" || reason === "history") && !browser.candidate()) {
+					followRead(null, "reset");
+					return;
+				}
+				const result = acceptWindow(session.value.accepted, decoded, completedReason === "append", infiniteEnabled);
 				if (!mounted || active !== generation) return;
 				work = {
 					kind: "publishing",
@@ -2942,7 +3107,6 @@ function createV2Controller(props, identity) {
 					resolve({ status: "superseded" });
 					return;
 				}
-				const completedReason = pending?.promise === promise ? pending.reason : reason;
 				const completedExplicit = pending?.promise === promise ? pending.explicit : explicit;
 				listen(page.metadata.channel, completedExplicit, [
 					"reload",
@@ -2981,11 +3145,19 @@ function createV2Controller(props, identity) {
 				}
 			} catch (cause) {
 				if (!mounted || active !== generation) return;
-				const failure = rejected ?? (!received && cause instanceof HttpNetworkError ? {
+				const failure = rejected ?? (cause instanceof BrowserKeyConflict ? {
+					kind: "validation",
+					code: "duplicate_state_key",
+					message: cause.message
+				} : !received && cause instanceof HttpNetworkError ? {
 					kind: "network",
 					code: "request_failed",
 					message: "The data source could not be reached."
 				} : protocolError());
+				if (state && (reason === "initial" || reason === "history") && (failure.kind === "cursor_expired" || failure.code === "invalid_cursor")) {
+					followRead(null, "reset");
+					return;
+				}
 				discardBuffer();
 				pollingPaused = true;
 				cancelPoll();
@@ -3255,6 +3427,10 @@ function createV2Controller(props, identity) {
 				retry: own(() => append(true))
 			}) : null,
 			resetContext: own(resetContext),
+			share: () => {
+				const accepted = session.value.accepted;
+				return mounted && captured === epoch && accepted ? browser.share(accepted.window?.start ?? accepted.page.requested) : null;
+			},
 			restartPolling: () => {
 				if (mounted && captured === epoch) restartPolling();
 			},
@@ -3525,6 +3701,7 @@ function createLegacyController(props) {
 			error: error.value,
 			integrationError: null,
 			infinite: null,
+			share: () => null,
 			resetContext: own(resetContext),
 			restartPolling: () => {},
 			requested: requested.value,
@@ -3593,7 +3770,7 @@ function createLegacyController(props) {
 		}
 	};
 }
-function createController(props, identity) {
+function createController(props) {
 	if (props.protocol !== 2 && (props.echo !== void 0 || props.polling !== void 0 && props.polling !== false)) throw new Error("Echo and polling require protocol 2.");
 	if (props.infinite !== void 0 && props.infinite !== false && props.protocol !== 2) throw new Error("Infinite loading requires protocol 2.");
 	if (props.infinite !== void 0 && typeof props.infinite !== "boolean") {
@@ -3606,7 +3783,7 @@ function createController(props, identity) {
 	}
 	if (props.paging !== void 0 && props.paging !== "offset" && props.paging !== "source") throw new Error("Choose offset or source paging.");
 	if (props.paging === "source" && props.protocol !== 2) throw new Error("Source paging requires protocol 2.");
-	return props.protocol === 2 ? createV2Controller(props, identity) : createLegacyController(props);
+	return props.protocol === 2 ? createV2Controller(props) : createLegacyController(props);
 }
 // resources/js/useDataAdapter.ts
 const optionKeys = [
@@ -3655,9 +3832,8 @@ function create(input, options, props) {
 		...options
 	};
 	if (options.id !== void 0 && options.id.trim() === "") throw new Error("An adapter id must not be empty.");
-	const identity = options.id ?? useId();
 	const scope = effectScope(true);
-	const controller = scope.run(() => createController(ownerProps, identity));
+	const controller = scope.run(() => createController(ownerProps));
 	if (!controller) throw new Error("The adapter owner scope could not be created.");
 	const handle = facade(controller.state);
 	let disposed = false;
@@ -3841,8 +4017,9 @@ var DataAdapter_default = /* @__PURE__ */ defineComponent({
 			required: false
 		}
 	},
-	setup(__props) {
+	setup(__props, { expose: __expose }) {
 		const state = componentAdapter(__props);
+		__expose({ share: () => state.value?.share() ?? null });
 		return (_ctx, _cache) => {
 			return unref(state) ? renderSlot(_ctx.$slots, "default", normalizeProps(guardReactiveProps(unref(state))), void 0, void 0, 0) : createCommentVNode("v-if", true);
 		};

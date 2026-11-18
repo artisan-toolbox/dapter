@@ -780,6 +780,17 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     {
         $column = str_contains($search->target, '.') ? $search->target : self::baseAlias($query).'.'.$search->target;
 
+        if ($search->matchType === MatchType::Vector) {
+            $resolved = $comparisons ?? throw DapterException::configuration();
+            $vector = $resolved->options->fields[$search->field]->search->options->vector;
+            $query->whereRaw(new Comparisons\VectorExpression($column, $resolved->vectorSchema($search->field)), [
+                json_encode($search->value, JSON_THROW_ON_ERROR),
+                json_encode($vector->maxDistance, JSON_THROW_ON_ERROR),
+            ], $boolean);
+
+            return;
+        }
+
         if ($search->matchType === MatchType::FullText) {
             $configuration = ($comparisons ?? throw DapterException::configuration())->configuration($search->field, $global);
             $query->whereRaw(new Comparisons\FullTextExpression($column), [$configuration, $configuration, $search->value], $boolean);
@@ -793,7 +804,11 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
             return;
         }
         $literal = ($comparisons ?? throw DapterException::configuration())->literal ?? throw DapterException::configuration();
-        $query->whereRaw($literal->expression($column, $search->matchType), $literal->bindings((string) $search->value, $search->matchType), $boolean);
+
+        if (! is_string($search->value)) {
+            throw DapterException::configuration();
+        }
+        $query->whereRaw($literal->expression($column, $search->matchType), $literal->bindings($search->value, $search->matchType), $boolean);
     }
 
     /** @param Builder<covariant Model> $builder */
@@ -1165,21 +1180,25 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
             }
             $tables[$match[2] ?? $match[1]] = $match[1];
         }
-        $columns = [];
-        $schema = function (string $target) use ($connection, $tables, &$columns): ?array {
+        $physicalColumn = static function (string $target) use ($tables): array {
             $parts = explode('.', $target);
             $alias = count($parts) === 1 ? array_key_first($tables) : $parts[0];
-            $name = count($parts) === 1 ? $parts[0] : ($parts[1] ?? '');
 
             if (count($parts) > 2 || ! isset($tables[$alias])) {
-                return null;
+                throw DapterException::configuration();
             }
 
-            if (! isset($columns[$alias])) {
-                $columns[$alias] = array_column($connection->getSchemaBuilder()->getColumns($tables[$alias]), null, 'name');
+            return [$tables[$alias], $parts[1] ?? $parts[0]];
+        };
+        $columns = [];
+        $schema = function (string $target) use ($connection, $physicalColumn, &$columns): ?array {
+            [$table, $name] = $physicalColumn($target);
+
+            if (! isset($columns[$table])) {
+                $columns[$table] = array_column($connection->getSchemaBuilder()->getColumns($table), null, 'name');
             }
 
-            return $columns[$alias][$name] ?? null;
+            return $columns[$table][$name] ?? null;
         };
         $projection = $this->projection($builder);
         $validate = function (string $target, ?ValueType $type, bool $order = false) use ($schema, $projection): void {
@@ -1215,7 +1234,13 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
                 if (isset($projection[$field->target])) {
                     throw DapterException::configuration();
                 }
-                $validate($field->target, $field->search->valueType);
+
+                if ($field->search->options?->vector !== null) {
+                    [$table, $name] = $physicalColumn($field->target);
+                    $this->validateVectorColumn($table, $name, $field->search->options->vector->dimensions);
+                } else {
+                    $validate($field->target, $field->search->valueType);
+                }
             }
 
             if ($field->order !== null) {
@@ -1241,6 +1266,23 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
             if ($selected !== null && $selected !== ($projection[$column->target] ?? $column->target) || $selected === null && ! $this->selects($column->target, $column->output)) {
                 throw DapterException::configuration();
             }
+        }
+    }
+
+    private function validateVectorColumn(string $table, string $name, int $dimensions): void
+    {
+        $pdo = $this->useWritePdo ? $this->writePdo : $this->readPdo;
+        $statement = $pdo?->prepare(<<<'SQL'
+            select a.atttypmod
+            from pg_catalog.pg_attribute a
+            join pg_catalog.pg_type t on t.oid = a.atttypid
+            join pg_catalog.pg_extension e on e.extnamespace = t.typnamespace
+            where a.attrelid = pg_catalog.to_regclass(?) and a.attname = ?
+              and not a.attisdropped and t.typname = 'vector' and e.extname = 'vector'
+            SQL);
+
+        if (! $statement || ! $statement->execute([$this->grammar->wrapTable($table), $name]) || (int) $statement->fetchColumn() !== $dimensions) {
+            throw DapterException::configuration();
         }
     }
 

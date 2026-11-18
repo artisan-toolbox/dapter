@@ -838,6 +838,7 @@ describe('shared public adapters', () => {
             'error',
             'integrationError',
             'infinite',
+            'share',
             'resetContext',
             'restartPolling',
             'requested',

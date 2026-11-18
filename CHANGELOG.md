@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Added exact PostgreSQL pgvector L2 field filtering with prepared float32 vectors, inclusive distance thresholds, capability admission, scoped counts, and existing paging modes. Embedding generation and distance ranking remain application concerns.
+- Replaced protocol 2 JSON URL snapshots with expiring localStorage snapshots referenced by UUID. Configure `state.ttl` in minutes, or set `stateTtl()` with minutes or a future Carbon deadline and `stateKey()` with a query key.
+- Added class, ancestor, and trait version checks for restored states and portable `share()` links. Missing, expired, or incompatible state returns to authorized defaults. A cold restored listing reads current policy before it reapplies the saved criteria.
+
+
+### Documentation
+
+- Updated the README and Laravel Boost skill to install the published `1.0.0-alpha.1` release from Composer.
+
 ## [1.0.0-alpha.1] - 2026-11-18
 
 ### Fixes

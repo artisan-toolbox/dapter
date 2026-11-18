@@ -100,7 +100,7 @@ final class OptionsResolver
                 throw DapterException::configuration();
             }
         }
-        $result = new ResolvedStoreOptions($mode, $size, $normalized, $guard, $access, $gate, $fields, $driver, ...[...$resolved, $resource, $broadcasting, AdvancedOptionsResolver::strictLiteralSearch($values)]);
+        $result = new ResolvedStoreOptions($mode, $size, $normalized, $guard, $access, $gate, $fields, $driver, ...[...$resolved, $resource, $broadcasting, AdvancedOptionsResolver::strictLiteralSearch($values), BrowserStatePolicy::resolve($values)]);
         (new ActionRegistry)->discover($source, $result);
 
         return $result;

@@ -15,6 +15,7 @@
             <file>tests/Feature/AdvancedReadsTest.php</file>
             <file>tests/Feature/PagingTraversalTest.php</file>
             <file>tests/Feature/NativeComparisonsTest.php</file>
+            <file>tests/Feature/NativeVectorSearchTest.php</file>
             <file>tests/Feature/LiteralSearchPolicyTest.php</file>
         </testsuite>
     </testsuites>

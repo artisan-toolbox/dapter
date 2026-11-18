@@ -234,11 +234,21 @@ export type FieldCapability<Available, Current, Input> = Readonly<{
     call(value: Input, options?: StateOptions): Promise<AsyncOutcome>;
     clear(options?: StateOptions): Promise<AsyncOutcome>;
 }>;
-type SearchValue<T> = T extends 'string' ? string : T extends 'integer' | 'number' ? number : never;
-export type SearchInput<S extends SearchDefinition> = {
-    readonly value: SearchValue<S['valueType']>;
-    readonly matchType: S['matchTypes'][number];
-};
+type SearchValue<T> = T extends 'vector'
+    ? readonly number[]
+    : T extends 'string'
+      ? string
+      : T extends 'integer' | 'number'
+        ? number
+        : never;
+export type SearchInput<S extends SearchDefinition> = S extends { readonly valueType: 'vector' }
+    ? { readonly value: readonly number[]; readonly matchType: 'vector' }
+    : S extends { readonly valueType: 'string' | 'integer' | 'number' }
+      ? {
+            readonly value: SearchValue<S['valueType']>;
+            readonly matchType: Exclude<S['matchTypes'][number], 'vector'>;
+        }
+      : import('./protocol-v2.js').SearchSelection;
 export type FilterInput<F extends FilterDefinition> = {
     readonly value: F extends { readonly multiple: true }
         ? F extends { readonly empty: 'reject' }
@@ -321,6 +331,7 @@ export type DataAdapterHandle<
     readonly status: 'idle' | 'loading' | 'success' | 'error';
     readonly error: AdapterError | null;
     readonly integrationError: IntegrationError | null;
+    readonly share: () => string | null;
     readonly resetContext: () => Promise<AsyncOutcome>;
     readonly restartPolling: () => void;
     readonly infinite: InfiniteControls | null;
@@ -551,6 +562,7 @@ function createLegacyController(props: SourceAdapterProps): {
             error: error.value,
             integrationError: null,
             infinite: null,
+            share: () => null,
             resetContext: own(resetContext),
             restartPolling: () => {},
             requested: requested.value,
@@ -616,7 +628,6 @@ function createLegacyController(props: SourceAdapterProps): {
 
 export function createController<P extends SourceAdapterProps>(
     props: P,
-    identity: string,
 ): { state: ComputedRef<DataAdapterSlot<P>>; start: () => void; dispose: () => void } {
     if (
         props.protocol !== 2 &&
@@ -641,9 +652,7 @@ export function createController<P extends SourceAdapterProps>(
         throw new Error('Choose offset or source paging.');
     if (props.paging === 'source' && props.protocol !== 2)
         throw new Error('Source paging requires protocol 2.');
-    return props.protocol === 2
-        ? createV2Controller(props, identity)
-        : createLegacyController(props);
+    return props.protocol === 2 ? createV2Controller(props) : createLegacyController(props);
 }
 
 export type ComponentSlot<
