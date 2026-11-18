@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.0-beta.2] - 2026-11-18
+
+### Features
+
+- **Synchronize Dapter npm version with release build** (`65ba2b4`)
+  Bumped the Dapter frontend/package version constant `Dapter::VERSION` from `1.0.0-beta.1` to `1.0.0-beta.2`, and extended the `Dapter` class to participate in the versioning lifecycle by implementing `BeforeVersioning` (in addition to existing `Versionable` and `WithReadmeHead`). Added a `beforeVersioning(string $current, string $next): void` hook that, from the project root, executes `npm version $next --no-git-tag-version --allow-same-version --ignore-scripts` and then `npm run release:build`. This ensures the frontend/package version is synchronized with the release version and that the frontend is rebuilt/validated as part of the versioning workflow. User impact: releases will now trigger these npm side effects automatically during versioning; compatibility/API behavior is unchanged aside from the new pre-versioning execution and the version number bump. Migration: none required for library consumers; maintainers should be aware that versioning will execute npm commands and may fail if the npm steps fail.
+
+### Maintenance
+
+- **Align README and Boost skill with beta.1 documentation** (`2caf809`)
+  Updated project documentation to align the README and Boost skill references with the `beta.1` published behavior/version. Specifically, the README was updated to reflect the release version change from `1.0.0-alpha.1` to `1.0.0-beta.1`, including the published release badge/text and the Composer install command while leaving other install constraints (e.g., the Ziggy constraint `tightenco/ziggy:"^2.6.5"`) intact. Additionally, documentation under `resources/boost/skills/dapter-development/SKILL.md` was updated from `1.0.0-alpha.1` to `1.0.0-beta.1`, including the stated current version (`Dapter::VERSION`) and wording around local preview vs. `Dapter beta.1`. User impact: no runtime/functional behavior changes—only documentation consistency with the published `beta.1` release. Migration: none required for users; maintainers should ensure docs match the intended published release line.
+
 ## [1.0.0-beta.1] - 2026-11-18
 
 ### Features
