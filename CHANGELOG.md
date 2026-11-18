@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0-beta.1] - 2026-11-18
+
+### Features
+
+- **Add vector L2 filtering and browser state snapshots** (`6340357`)
+  Includes the changes introduced by commit 6340357: feat: add vector L2 filtering and browser state snapshots.
+
 ## Unreleased
 
 ### Features
