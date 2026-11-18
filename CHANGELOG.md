@@ -1,5 +1,47 @@
 # Changelog
 
+## [1.0.0-alpha.1] - 2026-11-18
+
+### Fixes
+
+- **Normalize simple-page rows while preserving Eloquent keys** (`0f435b0`)
+  Updates the Eloquent mapping for “simple-page” rows to be normalized in a consistent shape while preserving the original Eloquent keys. This prevents subtle identity issues where downstream code could lose or mismatch record identity after transforming/rehydrating page rows. User impact: fixes incorrect/unstable page data ordering or linkage when rendering or processing simple-page results. Compatibility: should be backward compatible at the API level; it changes internal data normalization and key preservation semantics to be correct. Migration: none required.
+
+- **Preserve non-string name validation and analysis in console** (`9871fd5`)
+  Fixes the console validation/analysis behavior to preserve non-string “name” values rather than implicitly converting/dropping them. This prevents validation from changing the meaning of user input or losing diagnostic context during console processing. User impact: more accurate error reporting and validation behavior when name fields are not strings. Compatibility: likely behavior change for edge cases only; it improves correctness without affecting standard string inputs. Migration: none required.
+
+- **Reject deferred callbacks and sanitize page bounds in Eloquent** (`f804cfd`)
+  Modifies the Eloquent/page logic to reject deferred callbacks and to sanitize page bounds. The goal is to prevent delayed execution paths that can lead to inconsistent results and to ensure pagination/bounds parameters stay within safe/expected limits. User impact: eliminates incorrect pagination outcomes and potential runtime issues caused by deferred execution or invalid bounds. Compatibility: behavior changes for invalid/deferred scenarios; standard usage should be unaffected. Migration: none for normal users; if callers relied on deferred behavior or supplied out-of-range bounds, they must correct inputs.
+
+- **Canonicalize packed consumer root for Vite** (`3618599`)
+  Includes the changes introduced by commit 3618599: fix(distribution): canonicalize packed consumer root for Vite.
+
+### Tests
+
+- **Add query defaults and regression coverage** (`028a51f`)
+  Adds regression tests covering query default values and counts. This increases confidence that query-building logic produces stable defaults and that result counts remain correct across changes. User impact: improved quality via earlier detection of regressions; no runtime behavior change expected. Compatibility: none. Migration: none.
+
+### Build
+
+- **Initial commit** (`f8bdf69`)
+  Establishes the initial repository contents, including baseline project structure and starting implementation state. User impact: establishes the project for the first time. Compatibility: n/a. Migration: n/a.
+
+### Continuous Integration
+
+- **Add native backend DB workflow and distribution checks** (`2d3a63f`)
+  Introduces a CI workflow that uses a native backend database setup and adds distribution verification checks as part of the build/test pipeline. This improves reliability by ensuring the project is validated against the expected DB/runtime environment and that distribution artifacts or packaging outputs meet defined expectations. User impact: more trustworthy CI results; fewer surprises from environment/package differences. Compatibility: no public runtime/API changes. Migration: none required.
+
+### Maintenance
+
+- **Bump Inertia and Vue minimum versions for adapter** (`583484a`)
+  Raises the minimum supported versions of Inertia and Vue required by the adapter. This ensures the adapter targets maintained features/compatibility levels and can rely on newer runtime capabilities. User impact: projects pinned below the new minima may fail to install or run. Compatibility: potential breaking change for older setups (dependency constraint tightening). Migration: update project dependencies to meet the new Inertia/Vue minimum versions before upgrading.
+
+- **Add Dapter preview docs, contracts, and new adapter code** (`7f193a0`)
+  Introduces/updates Dapter preview documentation, related contracts, and adds new adapter implementation code. This expands or refines the adapter preview surface area and documentation for upcoming/experimental behavior. User impact: developers can follow preview documentation and use updated adapter contracts/code; however, preview features may evolve and are not necessarily stable. Compatibility: likely affects adapter internals/preview APIs; check version/preview expectations. Migration: follow the new preview docs/contract expectations if using preview features.
+
+- **Add AI standards bundle skills and documentation** (`28c10df`)
+  Adds a documentation bundle for AI standards and introduces related “skills” documentation. This primarily formalizes how agents should follow standards in the repository (process/documentation and agent guidance). User impact: none at runtime; it improves contribution/agent consistency. Compatibility: no public API/behavior changes. Migration: none.
+
 ## Unreleased
 
 - Preserve the Eloquent model bound through query preparation and cloning for static analysis with the minimum supported dependencies. Normalize simple-page rows to sequential keys when Eloquent collections use string keys.
