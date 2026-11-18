@@ -10,6 +10,8 @@
 ## Unreleased
 
 - Align the README and Boost skill with published beta.1, including vector filtering and portable browser state.
+- Synchronize the `@artisan-toolbox/dapter/dist` version export and npm lockfile with `1.0.0-beta.1`.
+- Synchronize the npm version and rebuild and validate the frontend before Maintainer creates a release commit.
 
 ### Features
 

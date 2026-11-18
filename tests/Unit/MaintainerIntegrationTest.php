@@ -2,8 +2,45 @@
 
 declare(strict_types=1);
 
+use ArtisanToolbox\Dapter\Dapter;
 use Illuminate\Filesystem\Filesystem;
-use Symfony\Component\Process\Process;
+use Illuminate\Process\Exceptions\ProcessFailedException;
+use Illuminate\Process\PendingProcess;
+use Illuminate\Support\Facades\Process;
+use Symfony\Component\Process\Process as SymfonyProcess;
+
+it('synchronizes the selected npm version before building the frontend for release', function () {
+    Process::fake();
+
+    Dapter::beforeVersioning('1.0.0-beta.1', '1.0.0-beta.2');
+
+    $root = dirname(__DIR__, 2);
+    Process::assertRanInOrder([
+        fn (PendingProcess $process): bool => $process->path === $root
+            && $process->command === ['npm', 'version', '1.0.0-beta.2', '--no-git-tag-version', '--allow-same-version', '--ignore-scripts'],
+        fn (PendingProcess $process): bool => $process->path === $root
+            && $process->command === ['npm', 'run', 'release:build'],
+    ]);
+});
+
+it('stops versioning when an npm release command fails', function (string $command, bool $runsBuild) {
+    Process::fake([
+        $command => Process::result(errorOutput: 'Frontend release failed.', exitCode: 1),
+        '*' => Process::result(),
+    ]);
+
+    expect(fn () => Dapter::beforeVersioning('1.0.0-beta.1', '1.0.0-beta.2'))
+        ->toThrow(ProcessFailedException::class, 'Frontend release failed.');
+
+    if ($runsBuild) {
+        Process::assertRan(['npm', 'run', 'release:build']);
+    } else {
+        Process::assertDidntRun(['npm', 'run', 'release:build']);
+    }
+})->with([
+    'version update fails before the build' => ['*npm*version*', false],
+    'frontend build fails' => ['*npm*release:build*', true],
+]);
 
 it('regenerates the committed README head and preserves unmanaged content', function () {
     $root = dirname(__DIR__, 2);
@@ -23,7 +60,7 @@ it('regenerates the committed README head and preserves unmanaged content', func
             1,
         ));
 
-        $command = new Process([
+        $command = new SymfonyProcess([
             PHP_BINARY,
             $root.'/vendor/artisan-toolbox/maintainer/builds/maintainer',
             'readme:update',

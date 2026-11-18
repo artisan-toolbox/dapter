@@ -4,14 +4,29 @@ declare(strict_types=1);
 
 namespace ArtisanToolbox\Dapter;
 
+use ArtisanToolbox\Maintainer\Versionable\Contracts\BeforeVersioning;
 use ArtisanToolbox\Maintainer\Versionable\Contracts\Versionable;
 use ArtisanToolbox\Maintainer\Versionable\Contracts\WithReadmeHead;
 use ArtisanToolbox\Maintainer\Versionable\Readme\Badge;
 use ArtisanToolbox\Maintainer\Versionable\Readme\Head;
+use Illuminate\Support\Facades\Process;
 
-class Dapter implements Versionable, WithReadmeHead
+class Dapter implements BeforeVersioning, Versionable, WithReadmeHead
 {
     public const string VERSION = '1.0.0-beta.1';
+
+    public static function beforeVersioning(string $current, string $next): void
+    {
+        Process::path(dirname(__DIR__))
+            ->forever()
+            ->run(['npm', 'version', $next, '--no-git-tag-version', '--allow-same-version', '--ignore-scripts'])
+            ->throw();
+
+        Process::path(dirname(__DIR__))
+            ->forever()
+            ->run(['npm', 'run', 'release:build'])
+            ->throw();
+    }
 
     public function readmeHead(): Head
     {
