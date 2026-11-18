@@ -45,7 +45,7 @@ use PDO;
 /** @template TModel of Model */
 readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalStoreDriver
 {
-    /** @var Builder<*> */
+    /** @var Builder<covariant Model> */
     private Builder $source;
 
     private DriverCapabilities $profile;
@@ -72,7 +72,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     /** @var array{class:class-string<Model>,table:string,key:string,connection:?string} */
     private array $modelShape;
 
-    /** @param Builder<*> $source */
+    /** @param Builder<covariant Model> $source */
     public function __construct(Builder $source, private ?QueryOptions $queryOptions = null)
     {
         $mandatory = self::canonical($source->getQuery());
@@ -264,7 +264,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
             }
             $query = $this->copy($scoped)->offset(($plan->paging->current - 1) * $plan->paging->perPage)->limit($plan->paging->perPage + 1);
             $this->guard($query, bounded: true);
-            $rows = $query->get()->all();
+            $rows = array_values($query->get()->all());
 
             return new SimplePage(array_slice($rows, 0, $plan->paging->perPage), $plan->paging, $plan->paging->current > 1, count($rows) > $plan->paging->perPage, $counts, AutomaticOrder::wire($plan, $terms));
         }
@@ -305,7 +305,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
         return new CursorPage($rows, $plan->paging, $previous, $next, $counts, $effectiveOrder);
     }
 
-    /** @param Builder<*> $builder */
+    /** @param Builder<covariant Model> $builder */
     private function fingerprint(Builder $builder): string
     {
         $query = $builder->getQuery();
@@ -319,7 +319,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     }
 
     /**
-     * @param Builder<*> $builder
+     * @param  Builder<covariant Model>  $builder
      * @param  list<OrderTerm>  $declared
      * @return non-empty-list<OrderTerm>
      */
@@ -398,7 +398,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     }
 
     /**
-     * @param Builder<*> $builder
+     * @param  Builder<covariant Model>  $builder
      * @param  list<OrderTerm>  $declared
      * @return array<string,string>
      */
@@ -420,7 +420,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     }
 
     /**
-     * @param Builder<*> $builder
+     * @param  Builder<covariant Model>  $builder
      * @return array<string,string>
      */
     private function cursorProjection(Builder $builder): array
@@ -466,7 +466,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
         return $outputs;
     }
 
-    /** @param Builder<*> $builder */
+    /** @param Builder<covariant Model> $builder */
     private function cursorTarget(Builder $builder, string $target): string
     {
         $original = $this->projection($builder)[$target] ?? $target;
@@ -486,7 +486,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     }
 
     /**
-     * @param Builder<*> $builder
+     * @param  Builder<covariant Model>  $builder
      * @return array<string,string>
      */
     private function cursorTables(Builder $builder): array
@@ -503,7 +503,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     }
 
     /**
-     * @param Builder<*> $builder
+     * @param  Builder<covariant Model>  $builder
      * @return array<string,mixed>
      */
     private function cursorColumn(Builder $builder, string $target): array
@@ -527,7 +527,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     }
 
     /**
-     * @param Builder<*> $builder
+     * @param  Builder<covariant Model>  $builder
      * @param  non-empty-list<OrderTerm>  $terms
      */
     private function cursorEligibility(Builder $builder, array $terms): void
@@ -565,7 +565,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     }
 
     /**
-     * @param Builder<*> $builder
+     * @param  Builder<covariant Model>  $builder
      * @param  non-empty-list<OrderTerm>  $terms
      */
     private function bound(Builder $builder, array $terms, CursorBoundary $boundary): void
@@ -612,7 +612,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
         return $values;
     }
 
-    /** @return array{Builder<*>,Builder<*>,list<OrderTerm>} */
+    /** @return array{Builder<covariant Model>,Builder<covariant Model>,list<OrderTerm>} */
     private function prepare(ValidatedReadPlan|SimpleReadPlan|CursorReadPlan $plan): array
     {
         $this->guard($this->source);
@@ -731,8 +731,8 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     }
 
     /**
-     * @param Builder<*> $base
-     * @param Builder<*> $scoped
+     * @param  Builder<covariant Model>  $base
+     * @param  Builder<covariant Model>  $scoped
      */
     private function exactCounts(ValidatedReadPlan|SimpleReadPlan|CursorReadPlan $plan, Builder $base, Builder $scoped): ExactCounts
     {
@@ -775,7 +775,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
         return new ExactCounts($total, $filtered);
     }
 
-    /** @param Builder<*> $query */
+    /** @param Builder<covariant Model> $query */
     private static function search(Builder $query, SearchClause $search, string $boolean, ?Comparisons\ResolvedComparisons $comparisons, bool $global = false): void
     {
         $column = str_contains($search->target, '.') ? $search->target : self::baseAlias($query).'.'.$search->target;
@@ -796,7 +796,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
         $query->whereRaw($literal->expression($column, $search->matchType), $literal->bindings((string) $search->value, $search->matchType), $boolean);
     }
 
-    /** @param Builder<*> $builder */
+    /** @param Builder<covariant Model> $builder */
     private function column(Builder $builder, string $target): string
     {
         if (str_contains($target, '.') || isset($this->projection($builder)[$target])) {
@@ -806,7 +806,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
         return self::baseAlias($builder).'.'.$target;
     }
 
-    /** @param Builder<*> $builder */
+    /** @param Builder<covariant Model> $builder */
     private static function baseAlias(Builder $builder): string
     {
         $from = $builder->getQuery()->from;
@@ -818,7 +818,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
         return preg_split('/\\s+(?:as\\s+)?/i', $from)[1] ?? $builder->getModel()->getTable();
     }
 
-    /** @return Builder<*> */
+    /** @return Builder<covariant Model> */
     private function transformed(mixed $builder): Builder
     {
         if (! $builder instanceof Builder) {
@@ -832,8 +832,8 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     }
 
     /**
-     * @param Builder<*> $builder
-     * @return Builder<*>
+     * @param  Builder<covariant Model>  $builder
+     * @return Builder<covariant Model>
      */
     private function copy(Builder $builder): Builder
     {
@@ -844,8 +844,8 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     }
 
     /**
-     * @param Builder<*> $builder
-     * @return Builder<*>
+     * @param  Builder<covariant Model>  $builder
+     * @return Builder<covariant Model>
      */
     private static function isolated(Builder $builder): Builder
     {
@@ -874,7 +874,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
         return $copy;
     }
 
-    /** @param Builder<*> $builder */
+    /** @param Builder<covariant Model> $builder */
     private function count(Builder $builder): int
     {
         $copy = $this->copy($builder);
@@ -884,8 +884,8 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     }
 
     /**
-     * @param Builder<*> $builder
-     * @return Builder<*>
+     * @param  Builder<covariant Model>  $builder
+     * @return Builder<covariant Model>
      */
     private function countQuery(Builder $builder): Builder
     {
@@ -902,7 +902,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
         return $copy;
     }
 
-    /** @param Builder<*> $builder */
+    /** @param Builder<covariant Model> $builder */
     private function customCount(Builder $builder): int
     {
         $copy = $this->countQuery($builder);
@@ -929,7 +929,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
         return $value;
     }
 
-    /** @param Builder<*> $builder */
+    /** @param Builder<covariant Model> $builder */
     private function uniqueIdentity(Builder $builder): void
     {
         $copy = $this->copy($builder)->reorder();
@@ -974,7 +974,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
         return $query;
     }
 
-    /** @param Builder<*> $builder */
+    /** @param Builder<covariant Model> $builder */
     private function guard(Builder $builder, bool $count = false, bool $bounded = false, bool $eligibility = true): void
     {
         $query = $builder->getQuery();
@@ -1130,7 +1130,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
     }
 
     /**
-     * @param Builder<*> $builder
+     * @param  Builder<covariant Model>  $builder
      * @return array<string,string>
      */
     private function projection(Builder $builder): array
@@ -1256,7 +1256,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
         return $columns === null || in_array('*', $columns, true) || in_array(self::baseAlias($this->source).'.*', $columns, true) || in_array($target, $columns, true);
     }
 
-    /** @param Builder<*> $builder */
+    /** @param Builder<covariant Model> $builder */
     private static function advancedShape(Builder $builder, QueryOptions $options): bool
     {
         $query = $builder->getQuery();
@@ -1289,7 +1289,7 @@ readonly class EloquentStoreDriver implements IdentityLookupDriver, TraversalSto
         return true;
     }
 
-    /** @param Builder<*> $scoped */
+    /** @param Builder<covariant Model> $scoped */
     private static function prepareOffset(Builder $scoped): bool
     {
         $query = $scoped->getQuery();

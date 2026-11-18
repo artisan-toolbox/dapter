@@ -8,9 +8,13 @@ use App\DataSources\SqlRecords;
 use ArtisanToolbox\Dapter\Drivers\DriverFactory;
 use ArtisanToolbox\Dapter\Drivers\EloquentStoreDriver;
 use ArtisanToolbox\Dapter\Drivers\NegotiatedRead;
+use ArtisanToolbox\Dapter\Drivers\ReadSelection;
+use ArtisanToolbox\Dapter\Drivers\SimplePage;
+use ArtisanToolbox\Dapter\Drivers\SimpleReadPlan;
 use ArtisanToolbox\Dapter\Drivers\ValidatedReadPlan;
 use ArtisanToolbox\Dapter\Http\DapterException;
 use ArtisanToolbox\Dapter\Http\OffsetRequest;
+use ArtisanToolbox\Dapter\Http\SimpleRequest;
 use ArtisanToolbox\Dapter\Options\OptionsResolver;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,6 +51,25 @@ it('uses an ordinary model primary key order and normal visible serialization', 
         ->assertJsonPath('data.0.id', 2)->assertJsonPath('data.1.id', 5)->assertJsonPath('data.2.id', 8)
         ->assertJsonMissingPath('data.0.secret')->assertJsonPath('paging.total', 3)->assertJsonPath('state.order', ['kind' => 'source']);
     expect(OptionRecords::$reads)->toBe(1);
+});
+
+it('returns dense simple pages when an Eloquent collection has string keys', function (): void {
+    $query = FixtureRecord::query()->afterQuery(static fn (Collection $rows): Collection => $rows->keyBy('name'));
+    $driver = new EloquentStoreDriver($query);
+    $options = (new OptionsResolver)->resolve(new SqlRecords);
+    $first = $driver->traverse(new SimpleReadPlan($options, new SimpleRequest(1, 2), new ReadSelection));
+    $last = $driver->traverse(new SimpleReadPlan($options, new SimpleRequest(2, 2), new ReadSelection));
+    $this->assertInstanceOf(SimplePage::class, $first);
+    $this->assertInstanceOf(SimplePage::class, $last);
+
+    expect(array_keys($first->rows))->toBe([0, 1])
+        ->and(array_map(static fn (Model $row): mixed => $row->getKey(), $first->rows))->toBe([2, 5])
+        ->and($first->hasNext)->toBeTrue()
+        ->and(array_keys($last->rows))->toBe([0])
+        ->and($last->rows[0]->getKey())->toBe(8)
+        ->and($last->hasNext)->toBeFalse()
+        ->and($query->getQuery()->limit)->toBeNull()
+        ->and($query->getQuery()->offset)->toBeNull();
 });
 
 it('applies scopes exactly once preserves tenant boundaries and never mutates the supplied builder', function () {

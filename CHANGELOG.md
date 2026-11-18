@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Preserve the Eloquent model bound through query preparation and cloning for static analysis with the minimum supported dependencies. Normalize simple-page rows to sequential keys when Eloquent collections use string keys.
+
 - Set a bounded 512M memory limit in both PHPUnit configurations so the complete Pest suites and Maintainer checks work with PHP's 128M default. Exercise that starting limit in CI.
 
 - Reject record-action query shapes that can change represented identities when a selector is applied. Preserve ordinary columns, qualified aliases, joins, whole-row DISTINCT, and source-wide context cloning.
