@@ -1,5 +1,6 @@
 includes:
     - phpstan-platform.php
+    - extension.neon
 
 parameters:
     level: 7

@@ -47,19 +47,26 @@ it('derives readonly rows from an actual decoder and leaves source-only rows unk
         void slot.paging.per_page.setValue('2');
         // @ts-expect-error Slot state is readonly.
         slot.status = 'loading';
-        // @ts-expect-error URL persistence is not delivered yet.
+        // @ts-expect-error URL persistence is configured by the owner.
         void slot.url;
-        // @ts-expect-error Operation controls are not delivered yet.
         void slot.fields;
+        const control = slot.fields?.name?.search;
+        if (control) {
+            // @ts-expect-error Published action methods cannot be replaced.
+            control.call = () => Promise.resolve({ status: 'success' });
+        }
     };
+    // @ts-expect-error A free secondary row generic requires its actual decoder.
+    DataAdapter<{ source: string }, Product>({ source: 'Products' });
     // @ts-expect-error A free row type cannot create decoded records.
     DataAdapter<Product>({ source: 'Products' });
     // @ts-expect-error A props type promising a decoder requires that decoder.
     DataAdapter<typeof decodedProps>({ source: 'Products' });
-    // @ts-expect-error Future URL props are not supported.
     DataAdapter({ source: 'Products', url: true });
-    // @ts-expect-error Definition decoders are not supported.
+    // @ts-expect-error Definition decoders must return a validated definition.
     DataAdapter({ source: 'Products', decodeDefinition: () => ({}) });
+    // @ts-expect-error The component rejects unsupported endpoint props.
+    DataAdapter({ source: 'Products', endpoint: '/private' });
     // @ts-expect-error Custom endpoints are not supported.
     const unsupported: DataAdapterProps = { source: 'Products', endpoint: '/private' };
     void inspectUnknown;

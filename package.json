@@ -21,12 +21,19 @@
     "dist",
     "resources/js",
     "resources/contracts/read-v1.json",
-    "LICENSE.md"
+    "LICENSE.md",
+    "resources/contracts/updates-v1.json"
   ],
   "type": "module",
   "sideEffects": false,
   "module": "./resources/js/index.ts",
   "types": "./resources/js/index.ts",
+  "imports": {
+    "#dapter-native-action-types": {
+      "node": "./resources/js/native-action-types-node.d.ts",
+      "default": "./resources/js/native-action-types.d.ts"
+    }
+  },
   "exports": {
     ".": {
       "types": "./resources/js/index.ts",
@@ -53,13 +60,16 @@
     "check:dist": "node scripts/check-distribution.mjs",
     "release:build": "npm run check && npm test && npm run test:types && npm run build && npm run build:consumer && npm run check:dist",
     "standards:check": "node .ai/sync.mjs --check",
-    "build:consumer": "vp build --config tests/frontend/consumer/vite.config.ts"
+    "build:consumer": "vp build --config tests/frontend/consumer/vite.config.ts",
+    "native-types:generate": "node scripts/generate-native-action-types.mjs",
+    "native-types:check": "node scripts/generate-native-action-types.mjs --check"
   },
   "devDependencies": {
     "@inertiajs/core": "^3.0.3",
     "@inertiajs/vue3": "^3.0.3",
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.0",
+    "laravel-echo": "^2.6.3",
     "typescript": "^5.8.3",
     "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0",
     "vite-plus": "1.6.0",

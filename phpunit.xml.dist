@@ -15,12 +15,18 @@
     cacheDirectory=".phpunit.cache"
     backupStaticProperties="false"
 >
+    <php>
+        <ini name="memory_limit" value="512M"/>
+    </php>
     <testsuites>
         <testsuite name="Arch">
             <file>tests/ArchTest.php</file>
         </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Live">
+            <directory>tests/Live</directory>
         </testsuite>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>

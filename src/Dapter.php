@@ -18,19 +18,19 @@ class Dapter implements Versionable, WithReadmeHead
         return (new Head)
             ->withLogo(src: 'logo/dapter-icon.svg', alt: '', width: 88)
             ->withTitle('Dapter')
-            ->withDescription('Data adapter foundations for Laravel and Inertia applications.')
+            ->withDescription('Headless data listings for Laravel and Vue.')
             ->addBadge(Badge::make(
-                link: 'https://atb.dev.br/packages/dapter/',
+                link: 'https://atb.dev.br/docs/dapter',
                 imgSrc: 'https://img.shields.io/badge/Status-Preview-FF5947?style=flat-square',
                 imgAlt: 'Preview',
             ))
             ->addBadge(Badge::make(
-                link: 'https://atb.dev.br/packages/dapter/#requirements',
+                link: 'https://atb.dev.br/docs/dapter#requirements',
                 imgSrc: 'https://img.shields.io/badge/PHP-%5E8.5-777BB4?style=flat-square',
                 imgAlt: 'PHP',
             ))
             ->addBadge(Badge::make(
-                link: 'https://atb.dev.br/packages/dapter/#requirements',
+                link: 'https://atb.dev.br/docs/dapter#requirements',
                 imgSrc: 'https://img.shields.io/badge/Laravel-%5E13.0-FF2D20?style=flat-square',
                 imgAlt: 'Laravel',
             ))
@@ -40,7 +40,7 @@ class Dapter implements Versionable, WithReadmeHead
                 imgAlt: 'Tests',
             ))
             ->addBadge(Badge::make(
-                link: 'https://atb.dev.br/packages/dapter/',
+                link: 'https://atb.dev.br/docs/dapter',
                 imgSrc: 'https://img.shields.io/badge/Docs-Read-blue?style=flat-square',
                 imgAlt: 'Docs',
             ));

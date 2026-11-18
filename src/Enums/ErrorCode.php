@@ -6,6 +6,8 @@ namespace ArtisanToolbox\Dapter\Enums;
 
 enum ErrorCode: string
 {
+    case InvalidCursor = 'invalid_cursor';
+    case CursorExpired = 'cursor_expired';
     case AccessDenied = 'access_denied';
     case AuthenticationRequired = 'authentication_required';
     case InvalidRequest = 'invalid_request';

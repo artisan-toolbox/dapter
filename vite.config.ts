@@ -19,7 +19,10 @@ export default defineConfig({
     plugins: [rendererVue],
     pack: {
         entry: ['resources/js/index.ts'],
-        deps: { neverBundle: ['vue', '@inertiajs/vue3', 'ziggy-js'] },
+        deps: {
+            neverBundle: ['vue', '@inertiajs/vue3', 'ziggy-js'],
+            dts: { neverBundle: ['#dapter-native-action-types'] },
+        },
         plugins: [vue()],
         format: ['esm'],
         platform: 'neutral',

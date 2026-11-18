@@ -39,9 +39,15 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, libxml, mbstring, zip, fileinfo, sqlite, pdo_sqlite, bcmath, intl
-          ini-values: error_reporting=E_ALL
+          ini-values: error_reporting=E_ALL, memory_limit=128M
           tools: composer:v2
           coverage: none
+
+      - name: Verify the Git distribution before installing dependencies
+        shell: bash
+        run: |
+          git archive --format=zip --output="$RUNNER_TEMP/dapter-git.zip" HEAD
+          php scripts/check-composer-distribution.php "$RUNNER_TEMP/dapter-git.zip"
 
       - name: Install dependencies
         run: |
@@ -77,6 +83,12 @@ jobs:
           npm run build
           npm run build:consumer
           npm run check:dist
+
+      - name: Compare rebuilt files with the Git distribution
+        if: matrix.os == 'ubuntu-latest' && matrix.stability == 'prefer-stable'
+        run: |
+          unzip -q "$RUNNER_TEMP/dapter-git.zip" 'dist/*' -d "$RUNNER_TEMP/dapter-shipped"
+          diff -qr "$RUNNER_TEMP/dapter-shipped/dist" dist
 
       - name: Verify the Composer distribution
         run: composer distribution:check

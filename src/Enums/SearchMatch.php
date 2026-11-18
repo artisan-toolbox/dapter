@@ -7,4 +7,5 @@ namespace ArtisanToolbox\Dapter\Enums;
 enum SearchMatch: string
 {
     case All = 'all';
+    case Any = 'any';
 }

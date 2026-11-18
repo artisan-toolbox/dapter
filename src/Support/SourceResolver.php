@@ -12,21 +12,31 @@ use Illuminate\Container\Container;
 
 final class SourceResolver
 {
-    public function className(string $name): string
+    /** @internal */
+    public static function validName(string $name): bool
     {
         if (! preg_match('/\A[A-Z_a-z][A-Z_a-z0-9]*(?:\.[A-Z_a-z][A-Z_a-z0-9]*)*\z/D', $name)) {
-            throw DapterException::missing();
+            return false;
         }
 
         foreach (explode('.', $name) as $segment) {
             $token = token_get_all('<?php '.$segment)[1] ?? null;
 
             if (! is_array($token) || $token[0] !== T_STRING || in_array(strtolower($segment), ['int', 'float', 'bool', 'string', 'true', 'false', 'null', 'void', 'iterable', 'object', 'resource', 'numeric', 'mixed', 'never', 'self', 'parent', 'static', 'enum', 'readonly'], true)) {
-                throw DapterException::missing();
+                return false;
             }
         }
 
-        return app()->getNamespace().'DataSources\\'.str_replace('.', '\\', $name);
+        return true;
+    }
+
+    public function className(string $name): string
+    {
+        if (! self::validName($name)) {
+            throw DapterException::missing();
+        }
+
+        return resolve(SourceRegistry::class)->className($name) ?? app()->getNamespace().'DataSources\\'.str_replace('.', '\\', $name);
     }
 
     public function resolve(string $name): DataSource

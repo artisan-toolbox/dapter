@@ -15,6 +15,7 @@ use ArtisanToolbox\Dapter\Http\DapterException;
 use ArtisanToolbox\Dapter\Http\OffsetRequest;
 use ArtisanToolbox\Dapter\Options\ResolvedStoreOptions;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Assert;
 
 it('requires declared offset support before executing a bound driver', function () {
     $driver = new class implements StoreDriver
@@ -75,6 +76,8 @@ it('executes and advertises one accepted profile while retaining the selected re
     $read = NegotiatedRead::fromDriver($driver, $options, $requested);
     $capabilities = $read->wireCapabilities();
     $page = $read->execute();
+
+    Assert::assertInstanceOf(RawPage::class, $page);
 
     expect($driver->profiles)->toBe(1)->and($driver->executed?->options)->toBe($options)->and($driver->executed?->paging)->toBe($requested)
         ->and($requested->current)->toBe(9007199254740991)->and($page->paging->current)->toBe(2)

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArtisanToolbox\Dapter\Options;
 
+use ArtisanToolbox\Dapter\Actions\ActionRegistry;
 use ArtisanToolbox\Dapter\Attributes;
 use ArtisanToolbox\Dapter\Contracts\DataSource;
 use ArtisanToolbox\Dapter\Contracts\WithOptions;
@@ -27,27 +28,39 @@ final class OptionsResolver
         do {
             array_unshift($classes, $reflection);
         } while ($reflection = $reflection->getParentClass());
+        $advanced = new AdvancedOptionsResolver;
+        $configured = $advanced->config($values['declarations'] ?? []);
+        $values = array_replace($values, $configured);
+        $actionsClass = $values['actions_class'] ?? null;
         foreach ($classes as $class) {
-            $seen = [];
-            foreach ($class->getAttributes() as $attribute) {
-                if (! in_array($attribute->getName(), [Attributes\Paging::class, Attributes\PageSize::class, Attributes\PageSizeOptions::class, Attributes\Guard::class, Attributes\PublicAccess::class, Attributes\Authorize::class], true)) {
-                    continue;
-                }
-                $setting = $attribute->newInstance();
-
-                if (! $setting instanceof AttributeSetting) {
-                    throw DapterException::configuration();
-                }
-                $key = $setting->key()->value;
-
-                if (isset($seen[$key])) {
-                    throw DapterException::configuration();
-                }
-                $seen[$key] = true;
-                $values[$key] = $setting->value();
+            foreach ($class->getAttributes(Attributes\Actions::class) as $attribute) {
+                $actionsClass = $attribute->newInstance()->actionsClass;
             }
         }
-        $values = array_replace($values, $declaration->explicitValues());
+        $actionsClass = $declaration->explicitValues()['actions_class'] ?? $actionsClass;
+        $values = array_replace($values, $advanced->actionDefaults($actionsClass));
+        $fieldLayers = [$configured['fields'] ?? []];
+        foreach ($classes as $class) {
+            $values = array_replace($values, $advanced->attributes($class, $source));
+            $fieldLayer = [];
+            foreach ($class->getAttributes() as $attribute) {
+                if (is_a($attribute->getName(), FieldAttribute::class, true)) {
+                    $setting = $attribute->newInstance();
+
+                    if (! $setting instanceof FieldAttribute) {
+                        throw DapterException::configuration();
+                    }
+                    $fieldLayer[] = $setting->setting();
+
+                    continue;
+                }
+            }
+            $fieldLayers[] = $fieldLayer;
+        }
+        $fieldLayers[] = $declaration->fieldSettings();
+        $fields = (new FieldOptionsResolver)->resolve($fieldLayers);
+        $values = array_replace($values, $declaration->explicitValues(), (new ClassOptions)->values($source::class, $declaration));
+        [$resource, $broadcasting] = ProjectionOptions::parse($values);
         $mode = $values['paging'] ?? null;
         $size = $values['size'] ?? null;
         $sizes = $values['sizes'] ?? [];
@@ -73,6 +86,23 @@ final class OptionsResolver
             $normalized[] = $size;
         }
 
-        return new ResolvedStoreOptions($mode, $size, $normalized, $guard, $access, $gate);
+        $driver = $values['driver'] ?? null;
+
+        if ($driver !== null && (! is_string($driver) || ! FieldOptionsResolver::identifier($driver))) {
+            throw DapterException::configuration();
+        }
+
+        $resolved = $advanced->resolve($values);
+        foreach ($resolved[5]->fixedOrder ?? [] as $term) {
+            $order = $fields[$term->field]->order ?? null;
+
+            if ($order === null || ! in_array($term->direction, $order->directions, true) || ! in_array($term->sortType, $order->sortTypes, true)) {
+                throw DapterException::configuration();
+            }
+        }
+        $result = new ResolvedStoreOptions($mode, $size, $normalized, $guard, $access, $gate, $fields, $driver, ...[...$resolved, $resource, $broadcasting, AdvancedOptionsResolver::strictLiteralSearch($values)]);
+        (new ActionRegistry)->discover($source, $result);
+
+        return $result;
     }
 }

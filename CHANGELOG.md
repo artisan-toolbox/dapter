@@ -2,6 +2,53 @@
 
 ## Unreleased
 
+- Set a bounded 512M memory limit in both PHPUnit configurations so the complete Pest suites and Maintainer checks work with PHP's 128M default. Exercise that starting limit in CI.
+
+- Reject record-action query shapes that can change represented identities when a selector is applied. Preserve ordinary columns, qualified aliases, joins, whole-row DISTINCT, and source-wide context cloning.
+
+- Preserve original body selectors through native uploads and FormRequests while retaining ordinary Laravel form cleanup, guard and Gate responses, and host-route isolation.
+
+- Include built JavaScript, declarations, and source maps in Git-backed releases. Verify declared frontend targets before CI builds and compare canonical rebuilt artifacts with the release tree.
+- Preserve arbitrary valid record selectors in authorized action URLs, reject bounded mandatory SQL record sources before lookup, require registered broadcasting contexts for native actions, and preserve renewed private admission when older deliveries resume.
+
+- Restore registered live sources through their context factory for native actions, using the fresh selected-guard actor without issuing channel tickets. Group complete Eloquent predicates and scopes before record selectors. Preserve nullable object fields without reading unrelated PHP property hooks, allow opaque Resource inputs when no global transform is selected, and reject cloned or mutated Collection rows from selected handlers and presets.
+- Preserve page-local targeted actions across infinite windows, keep overflowed live channels suspended during automatic polling, supersede obsolete protocol 1 controls, and count native action visits only after dispatch starts. Strengthen negative type assertions against unrelated diagnostics.
+
+- Reject SQL String literal declarations on connections with registered beforeExecuting callbacks, including strict and unused declared searches, because callbacks can change execution after admission. Numeric-only declarations retain their existing prerequisites.
+
+- Change the unpublished preview String literal search default to case and accent insensitive matching, including canonical decompositions. Add source-owned strictLiteralSearch(), StrictLiteralSearch attributes, captured declarations.strict_literal_search configuration, and explicit literalSearchPolicy awareness for custom drivers. Keep frontend wire shapes and FullText parser semantics unchanged. Require explicit strict declarations for earlier exact-text behavior and restart cursor or retained live contexts after a policy change. Document native pgvector and persisted-pagination research as deferred public features with no new vector or snapshot runtime API.
+
+- Add explicit ICU Collection locale ordering and PostgreSQL plain-text full-text filtering with bound schema-qualified configuration, effective-PDO admission, exact capability metadata, scoped native paging, and early unsupported-operation rejection. Preserve literal comparisons, custom drivers, native cursor order, and finite nullable controls. Keep arbitrary regex and other full-text engines unavailable.
+
+- Add opt-in protocol 2 infinite windows with lossless forward accumulation, complete-settlement append serialization, explicit retry after failure, bounded vertical and horizontal observation, first-page refresh, and URL restoration of the window start. Preserve ordinary paging defaults and joined-row occurrences. Document the public controls with executable examples.
+
+- Add optional per-row Resources, stable context-bound private and explicit public live registrations, committed scoped updates, aligned typed identity and uint64 revisions, owned protocol 2 Echo replacements, bounded request-race replay, explicit context reset, and independent settlement-aware polling. Preserve default protocol 1 and all prior paging and action behavior.
+
+- Add opt-in protocol 2 simple and cursor pagination with bounded lookahead, durable identity, authenticated scope-bound 900-second cursors, explicit restart recovery, optional exact counts, and compatible custom traversal drivers. Preserve default offset contracts and add focused public documentation demos.
+
+- Ship an optional PHPStan 2.3 extension for private Action, GlobalFilter, and GlobalOrder entry points through the public extension.neon configuration and Composer extension-installer discovery. Keep ordinary unused private-method errors and all runtime dependencies unchanged.
+- Use exact installed public Inertia action types under Bundler and a reproducible conservative 3.0.3 baseline under NodeNext. Preserve consumer InertiaConfig augmentation and actual native callback objects in both modes.
+- Require opaque order presets to preserve the complete filtered membership, declared fixed prefix, and unique identity order. Remove native source fallback ordering before preset callbacks and reject invalid native results before listing SQL. Preserve original Collection row objects and duplicate multiplicity without a second sort.
+
+- Retain native missing-source action errors, explicit enum binding for compatible union parameters, and mandatory native query scopes and identity before and after global scope application.
+
+- Add inline, inherited private, trait, and dedicated native actions with finite verbs and transports, source and record Gate policies, validated FormRequests, strict record selectors, and per-record metadata URLs. Preserve native visits, redirects, error bags, and HTTP JSON behavior.
+- Add typed same-handle action definitions and independent input and result decoders. Report confirmed completion, local rejection, and unknown commit after validation, cancellation, or transport failure without automatic retry or listing refresh.
+- Add composed global search, finite enum-aware handler filters, opaque order presets, bounded multiple order terms, fixed prefixes, result identity ties, and declared search grouping in opt-in protocol 2. Keep default protocol 1 reads compatible and expose authorized action metadata on both versions.
+- Add configuration-seeded declarations, immutable nested options, equivalent attributes and private handlers, explicit removals, native source and engine requirements, qualified joined projections, grouped counts, and scoped custom CountQueries.
+
+- Add explicit Vue protocol v2 owners with immutable server capability projections, independent row and definition decoders, field search, named filters, and one field order. Keep protocol v1 as the default.
+- Add atomic requested-state replacement, explicit default reset, page-preserving criteria actions, latest-intent patches, search debounce, coalescing, settled supersession, and source-epoch guards for captured controls.
+- Add source-bound, versioned URL namespaces through public Inertia history APIs. Restore saved criteria, normalize acknowledged pages, preserve neighboring parameters, and scope scroll resets and history restoration to the declared container. Already accepted Inertia client visits can publish a transient obsolete URL; guarded corrections converge after settling without changing rows or issuing another data read.
+
+- Add opt-in raw read protocol v2 for declared field search, typed single-value and multiple-value filters, and one selected field order. Preserve the complete v1 paging wire shape and keep the default Vue adapter on v1.
+- Add immutable field declarations, repeatable attribute equivalents, inherited whole-entry replacement, and explicit removal methods and attributes. Reject duplicate declarations, target conflicts, invalid domains, and unsupported driver modes.
+- Support ordinary SQLite, MySQL, and PostgreSQL Eloquent sources through explicit native drivers. Preserve scoped source predicates, literal SQL search, deterministic primary-key ties, and separate total and filtered counts. Validate accepted query shapes, actual connection and grammar pairs, declared columns, and column families before listing reads.
+- Add trusted source and driver alias registries, explicit driver selection and its attribute, exact source lookup, and case-fold collision rejection. Missing or incompatible selected drivers fail without fallback.
+- Add v2 unidentified-record metadata with a null channel by default. Registered live sources provide aligned durable identity and optional revisions through the Resource and live-update preview described above.
+- Declare the Illuminate components used directly at runtime as production dependencies.
+- Reject invalid nonnull choices for null-only filters with HTTP 422. Validate native SQL operation support before counts, and reject replacement read or write PDO handles before catalog or listing queries.
+
 - Resolve the packed consumer's real filesystem path before starting Vite so Windows temporary-directory aliases do not trigger its short-path restriction. Exercise a directory alias and verify the Vite root in the distribution check.
 
 - Read raw console input before validating the data source name so current Larastan and PHPStan analysis preserves rejection of non-string programmatic arguments. Register the provider explicitly in Testbench so command analysis also works with cold discovery manifests, and give Composer analysis the same 2G memory limit as Maintainer. Keep missing-name and dotted-name validation unchanged.
@@ -41,5 +88,3 @@
 - Run backend and frontend checks on Ubuntu and Windows with lowest and stable supported dependencies.
 - Add package artwork and a Font Awesome duotone export.
 - Use the `1.x` development branch and versioned contributor standards.
-
-Search, filters, selectable ordering, MySQL, PostgreSQL, URL persistence, scrolling, Resources, broadcasts, and polling remain unavailable in this local preview.

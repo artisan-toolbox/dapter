@@ -1,0 +1,64 @@
+name: backend databases
+
+on:
+  push:
+    branches:
+      - 1.x
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-backends:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: dapter_native_ci
+          MYSQL_ROOT_PASSWORD: dapter_test_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pdapter_test_password"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: dapter_native_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: dapter_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d dapter_native_ci"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    env:
+      DAPTER_MYSQL_DATABASE: dapter_native_ci
+      DAPTER_MYSQL_USERNAME: root
+      DAPTER_MYSQL_PASSWORD: dapter_test_password
+      DAPTER_PGSQL_DATABASE: dapter_native_ci
+      DAPTER_PGSQL_USERNAME: postgres
+      DAPTER_PGSQL_PASSWORD: dapter_test_password
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: '8.5'
+          ini-values: memory_limit=128M
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo, pdo_sqlite, pdo_mysql, pdo_pgsql, bcmath, intl
+          tools: composer:v2
+          coverage: none
+      - name: Install dependencies
+        run: |
+          composer update --prefer-stable --prefer-dist --no-interaction --no-progress --no-scripts
+          composer run prepare
+      - name: Verify shared HTTP behavior on every backend
+        run: php vendor/bin/pest --configuration=phpunit.native.xml.dist

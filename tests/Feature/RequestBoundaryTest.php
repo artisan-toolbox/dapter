@@ -19,7 +19,7 @@ it('rejects malformed envelope and unsupported intent without reading records', 
     expect(OptionRecords::$reads)->toBe(0);
 })->with([
     ['null', 'validation'], ['[]', 'validation'], ['true', 'validation'], ['"version"', 'validation'],
-    ['{}', 'validation'], ['{"version":2}', 'validation'], ['{"version":1.0}', 'validation'], ['{"version":1,"extra":true}', 'validation'],
+    ['{}', 'validation'], ['{"version":3}', 'validation'], ['{"version":1.0}', 'validation'], ['{"version":1,"extra":true}', 'validation'],
     ['{"version":1,"\u0000unexpected":1}', 'validation'],
     ['{"version":1,"state":null}', 'validation'], ['{"version":1,"state":[]}', 'validation'],
     ['{"version":1,"state":{"version":1,"fields":{},"global":{},"searchMatch":"all","order":{"kind":"default"},"paging":{"mode":"offset","current":1,"per_page":7}}}', 'validation'],

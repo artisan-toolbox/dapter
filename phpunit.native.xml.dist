@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+    bootstrap="vendor/autoload.php" colors="true" failOnWarning="true"
+    failOnRisky="true" failOnEmptyTestSuite="true" beStrictAboutOutputDuringTests="true"
+    executionOrder="random" cacheDirectory=".phpunit.cache/native">
+    <php>
+        <ini name="memory_limit" value="512M"/>
+        <env name="DAPTER_NATIVE_DATABASES" value="1" force="true"/>
+    </php>
+    <testsuites>
+        <testsuite name="Native backend journey">
+            <file>tests/Feature/NativeBackendJourneyTest.php</file>
+            <file>tests/Feature/ComposedReadsTest.php</file>
+            <file>tests/Feature/AdvancedReadsTest.php</file>
+            <file>tests/Feature/PagingTraversalTest.php</file>
+            <file>tests/Feature/NativeComparisonsTest.php</file>
+            <file>tests/Feature/LiteralSearchPolicyTest.php</file>
+        </testsuite>
+    </testsuites>
+</phpunit>

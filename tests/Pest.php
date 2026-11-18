@@ -4,4 +4,4 @@ declare(strict_types=1);
 
 use ArtisanToolbox\Dapter\Tests\TestCase;
 
-uses(TestCase::class)->in(__DIR__);
+uses(TestCase::class)->in(__DIR__.'/Feature', __DIR__.'/Unit', __DIR__.'/ArchTest.php');

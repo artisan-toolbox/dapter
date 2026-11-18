@@ -11,6 +11,5 @@ composer.lock
 .vscode
 /config/maintainer_secrets.php
 /node_modules
-/dist
 *.tgz
 /.ai/standards-source

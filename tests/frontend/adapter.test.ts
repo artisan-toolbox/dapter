@@ -104,7 +104,7 @@ async function settle() {
     for (let count = 0; count < 8; count++) await Promise.resolve();
     await nextTick();
 }
-type SourceProps = Extract<DataAdapterProps, { source: string }>;
+type SourceProps = Extract<DataAdapterProps, { source: string; paging?: 'offset' | undefined }>;
 function mount(initial: SourceProps = { source: 'Products' }) {
     const props = reactive(initial);
     const states: DataAdapterSlot[] = [];
@@ -836,9 +836,22 @@ describe('shared public adapters', () => {
         expect(Object.keys(handle ?? {})).toEqual([
             'status',
             'error',
+            'integrationError',
+            'infinite',
+            'resetContext',
+            'restartPolling',
             'requested',
             'accepted',
             'paging',
+            'definition',
+            'capabilities',
+            'metadata',
+            'fields',
+            'global',
+            'setSearchMatch',
+            'actions',
+            'replaceState',
+            'resetState',
             'ready',
             'data',
         ]);

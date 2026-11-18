@@ -12,10 +12,12 @@ use ArtisanToolbox\Dapter\Drivers\ValidatedReadPlan;
 use ArtisanToolbox\Dapter\Http\DapterException;
 use ArtisanToolbox\Dapter\Http\OffsetRequest;
 use ArtisanToolbox\Dapter\Options\OptionsResolver;
+use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Database\Query\Grammars\MySqlGrammar;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\DB;
@@ -198,7 +200,7 @@ it('rejects complex queries and other SQL dialects without executing them', func
     };
 
     if ($shape === 'dialect') {
-        config()->set('database.connections.unsupported', ['driver' => 'mysql', 'host' => '127.0.0.1', 'database' => 'unused']);
+        config()->set('database.connections.unsupported', ['driver' => 'sqlsrv', 'host' => '127.0.0.1', 'database' => 'unused']);
         $query = FixtureRecord::on('unsupported');
     }
     SqlRecords::$builder = $query;
@@ -243,3 +245,69 @@ it('does not call an Eloquent source or perform listing SQL before full intent v
     $this->postJson('/dapter/data/SqlRecords', ['version' => 1, 'state' => $state])->assertStatus(422)->assertJsonPath('errors._dapter_kind', ['validation']);
     expect(OptionRecords::$reads)->toBe(0)->and($calls)->toBe(0)->and(DB::getQueryLog())->toBe([]);
 });
+
+it('rejects a stale connection grammar binding before catalog count or page reads', function (): void {
+    $source = FixtureRecord::query();
+    $driver = new EloquentStoreDriver($source);
+    $options = (new OptionsResolver)->resolve(new SqlRecords);
+    $connection = $source->getQuery()->getConnection();
+
+    throw_unless($connection instanceof Connection, RuntimeException::class, 'The fixture requires a native Laravel connection.');
+    $original = $connection->getQueryGrammar();
+    DB::enableQueryLog();
+
+    try {
+        $connection->setQueryGrammar(new MySqlGrammar($connection));
+        expect($driver->capabilities()->offset)->toBeTrue()
+            ->and(fn () => $driver->execute(new ValidatedReadPlan($options, new OffsetRequest(1, 5))))->toThrow(DapterException::class)
+            ->and(DB::getQueryLog())->toBe([]);
+    } finally {
+        $connection->setQueryGrammar($original);
+    }
+});
+
+it('rejects a retargeted connection identity before performing catalog count or page reads', function (): void {
+    $source = FixtureRecord::query();
+    $driver = new EloquentStoreDriver($source);
+    $options = (new OptionsResolver)->resolve(new SqlRecords);
+    $connection = $source->getQuery()->getConnection();
+
+    throw_unless($connection instanceof Connection, RuntimeException::class, 'The fixture requires a native Laravel connection.');
+    $database = $connection->getDatabaseName();
+    DB::enableQueryLog();
+
+    try {
+        $connection->setDatabaseName('retargeted_fixture');
+        expect(fn () => $driver->execute(new ValidatedReadPlan($options, new OffsetRequest(1, 5))))->toThrow(DapterException::class)
+            ->and(DB::getQueryLog())->toBe([]);
+    } finally {
+        $connection->setDatabaseName($database);
+    }
+});
+
+it('rejects replacement database handles before catalog count or page reads', function (string $handle): void {
+    $source = FixtureRecord::query();
+    $driver = new EloquentStoreDriver($source);
+    $options = (new OptionsResolver)->resolve(new SqlRecords);
+    $connection = $source->getQuery()->getConnection();
+
+    throw_unless($connection instanceof Connection, RuntimeException::class, 'The fixture requires a native Laravel connection.');
+    $pdo = $handle === 'write' ? $connection->getPdo() : $connection->getReadPdo();
+    DB::enableQueryLog();
+
+    try {
+        if ($handle === 'write') {
+            $connection->setPdo(new PDO('sqlite::memory:'));
+        } else {
+            $connection->setReadPdo(new PDO('sqlite::memory:'));
+        }
+        expect(fn () => $driver->execute(new ValidatedReadPlan($options, new OffsetRequest(1, 5))))->toThrow(DapterException::class)
+            ->and(DB::getQueryLog())->toBe([]);
+    } finally {
+        if ($handle === 'write') {
+            $connection->setPdo($pdo);
+        } else {
+            $connection->setReadPdo($pdo);
+        }
+    }
+})->with(['write', 'read']);

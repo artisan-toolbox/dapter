@@ -1,9 +1,17 @@
+import { parseActions, type ActionMetadataMap } from './actions.js';
 export type FailureKind = 'access' | 'validation' | 'unsupported_operation' | 'server';
-export type AdapterError = {
-    readonly kind: FailureKind | 'protocol' | 'network';
-    readonly code: string;
-    readonly message: string;
-};
+export type AdapterError =
+    | {
+          readonly kind: 'cursor_expired';
+          readonly code: 'cursor_expired';
+          readonly message: string;
+          readonly recovery: 'restart';
+      }
+    | {
+          readonly kind: FailureKind | 'protocol' | 'network';
+          readonly code: string;
+          readonly message: string;
+      };
 export type RequestedState = {
     readonly version: 1;
     readonly fields: Readonly<Record<string, never>>;
@@ -32,6 +40,7 @@ export type Page = {
         readonly has_next: boolean;
     };
     readonly options: readonly number[];
+    readonly actions?: ActionMetadataMap;
 };
 export const protocolError = (): AdapterError => ({
     kind: 'protocol',
@@ -43,8 +52,13 @@ function isObject(value: unknown): value is Record<string, unknown> {
         typeof value === 'object' &&
         value !== null &&
         !Array.isArray(value) &&
-        Object.getPrototypeOf(value) === Object.prototype
+        (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
     );
+}
+export function dictionary<T>(): Record<string, T> {
+    const result: Record<string, T> = {};
+    Object.setPrototypeOf(result, null);
+    return result;
 }
 export function object(value: unknown): Record<string, unknown> {
     if (!isObject(value)) throw new Error('Invalid object');
@@ -90,7 +104,7 @@ function parseIntent(value: unknown): RequestedState {
     fixed(paging.mode, 'offset');
     return intent(integer(paging.current), integer(paging.per_page));
 }
-function validateJson(value: unknown): void {
+export function validateJson(value: unknown): void {
     if (value === null || typeof value === 'string' || typeof value === 'boolean') return;
     if (
         typeof value === 'number' &&
@@ -116,17 +130,26 @@ export function freeze(value: unknown): unknown {
 function freezeStructure(value: unknown): unknown {
     if (Array.isArray(value))
         return Object.freeze(value.map((item: unknown) => freezeStructure(item)));
-    if (isObject(value))
-        return Object.freeze(
-            Object.fromEntries(
-                Object.entries(value).map(([key, item]) => [key, freezeStructure(item)]),
-            ),
+    if (isObject(value)) {
+        const result = Object.fromEntries(
+            Object.entries(value).map(([key, item]) => [key, freezeStructure(item)]),
         );
+        if (Object.getPrototypeOf(value) === null) Object.setPrototypeOf(result, null);
+        return Object.freeze(result);
+    }
     return value;
 }
 export function parsePage(value: unknown): Page {
     const page = object(value);
-    keys(page, ['version', 'data', 'requested', 'state', 'paging', 'capabilities']);
+    keys(page, [
+        'version',
+        'data',
+        'requested',
+        'state',
+        'paging',
+        'capabilities',
+        ...(Object.hasOwn(page, 'actions') ? ['actions'] : []),
+    ]);
     fixed(page.version, 1);
     if (!Array.isArray(page.data)) throw new Error('Invalid rows');
     validateJson(page.data);
@@ -199,6 +222,7 @@ export function parsePage(value: unknown): Page {
         throw new Error('Invalid sizes');
     return freeze({
         data: page.data,
+        ...(Object.hasOwn(page, 'actions') ? { actions: parseActions(page.actions) } : {}),
         requested,
         state: {
             order: { kind: 'source' },
@@ -225,7 +249,7 @@ export function failureKind(value: unknown): FailureKind | null {
         ? value
         : null;
 }
-export function parseFailure(value: unknown): AdapterError | null {
+export function parseFailure(value: unknown, version: 1 | 2 = 1): AdapterError | null {
     try {
         const envelope = object(value);
         keys(
@@ -234,8 +258,24 @@ export function parseFailure(value: unknown): AdapterError | null {
                 ? ['version', 'error', 'errors']
                 : ['version', 'error'],
         );
-        fixed(envelope.version, 1);
+        fixed(envelope.version, version);
         const error = object(envelope.error);
+        if (version === 2 && error.kind === 'cursor_expired') {
+            keys(envelope, ['version', 'error']);
+            keys(error, ['kind', 'code', 'message', 'recovery']);
+            if (
+                error.code !== 'cursor_expired' ||
+                error.recovery !== 'restart' ||
+                error.message !== 'The cursor has expired. Restart pagination to continue.'
+            )
+                return null;
+            return {
+                kind: 'cursor_expired',
+                code: 'cursor_expired',
+                message: error.message,
+                recovery: 'restart',
+            };
+        }
         keys(error, ['kind', 'code', 'message']);
         const kind = failureKind(error.kind);
         if (
@@ -248,7 +288,20 @@ export function parseFailure(value: unknown): AdapterError | null {
             return null;
         if (Object.hasOwn(envelope, 'errors')) {
             const errors = object(envelope.errors);
-            keys(errors, ['_dapter_kind']);
+            keys(
+                errors,
+                version === 2 && error.code === 'invalid_cursor'
+                    ? ['_dapter_kind', '_dapter_code']
+                    : ['_dapter_kind'],
+            );
+            if (
+                version === 2 &&
+                error.code === 'invalid_cursor' &&
+                (!Array.isArray(errors._dapter_code) ||
+                    errors._dapter_code.length !== 1 ||
+                    errors._dapter_code[0] !== 'invalid_cursor')
+            )
+                return null;
             if (!Array.isArray(errors._dapter_kind) || errors._dapter_kind.length !== 1)
                 return null;
             fixed(errors._dapter_kind[0], kind);
@@ -258,21 +311,30 @@ export function parseFailure(value: unknown): AdapterError | null {
         return null;
     }
 }
-export function validationFailure(errors: unknown): AdapterError {
+export function validationFailure(errors: unknown, version: 1 | 2 = 1): AdapterError {
     try {
-        const marker = object(errors)._dapter_kind;
+        const input = object(errors);
+        const marker = input._dapter_kind;
+        const code = input._dapter_code;
         const kind = Array.isArray(marker) && marker.length === 1 ? failureKind(marker[0]) : null;
         if (kind)
             return {
                 kind,
-                code: 'request_rejected',
+                code:
+                    version === 2 &&
+                    kind === 'validation' &&
+                    Array.isArray(code) &&
+                    code.length === 1 &&
+                    code[0] === 'invalid_cursor'
+                        ? 'invalid_cursor'
+                        : 'request_rejected',
                 message:
                     kind === 'access'
                         ? 'Access to this data source was denied.'
                         : 'The data source rejected the request.',
             };
     } catch {
-        /* Unknown validation responses fail closed. */
+        return protocolError();
     }
     return protocolError();
 }

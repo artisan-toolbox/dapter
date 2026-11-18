@@ -7,4 +7,6 @@ namespace ArtisanToolbox\Dapter\Enums;
 enum PagingMode: string
 {
     case Offset = 'offset';
+    case Simple = 'simple';
+    case Cursor = 'cursor';
 }

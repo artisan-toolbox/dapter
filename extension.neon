@@ -1,0 +1,5 @@
+services:
+    -
+        class: ArtisanToolbox\Dapter\PHPStan\AttributedMethodExtension
+        tags:
+            - phpstan.methods.alwaysUsedMethodExtension
