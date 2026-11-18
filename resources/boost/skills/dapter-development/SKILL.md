@@ -8,18 +8,18 @@ metadata:
 
 # Use Dapter in a Laravel application
 
-Dapter `1.0.0-alpha.1` supports Collection and ordinary SQLite, MySQL, and PostgreSQL Eloquent offset reads. Raw protocol v2 adds field and global search, finite filters, declared All or Any grouping, bounded multi-order, and opaque order presets. The Vue adapter and composable default to protocol v1 for paging and access. Explicit protocol 2 adds these field controls, URL history, search debounce, and scoped scrolling. Native authorized actions work with either read version. Protocol 2 with `paging: 'source'` adds simple and cursor pagination, optional exact counts, and explicit cursor recovery. Optional Resources work with both read versions. Registered live replacements, polling, and guarded infinite windows require an explicit protocol 2 owner.
+Dapter `1.0.0-beta.1` supports Collection and ordinary SQLite, MySQL, and PostgreSQL Eloquent offset reads. Raw protocol v2 adds field and global search, finite filters, declared All or Any grouping, bounded multi-order, and opaque order presets. The Vue adapter and composable default to protocol v1 for paging and access. Explicit protocol 2 adds these field controls, URL history, search debounce, and scoped scrolling. Native authorized actions work with either read version. Protocol 2 with `paging: 'source'` adds simple and cursor pagination, optional exact counts, and explicit cursor recovery. Optional Resources work with both read versions. Registered live replacements, polling, and guarded infinite windows require an explicit protocol 2 owner.
 
 ## Prerequisites
 
-Use PHP ^8.5, Laravel ^13.0, and Inertia Laravel ^3.0. The frontend requires Vue ^3.5.40, Inertia Vue and Core ^3.0.3, Ziggy ^2.6.5, Node.js >=24.11.0, and Vue-aware Vite and TypeScript tooling. Inertia 3.0.3 supplies the HTTP exception callback used to classify failed reads. Vue 3.5.40 preserves the component's public props and shared slot handle identity. These instructions target alpha.1. Check the installed version with `composer show artisan-toolbox/dapter` before applying them to an existing installation.
+Use PHP ^8.5, Laravel ^13.0, and Inertia Laravel ^3.0. The frontend requires Vue ^3.5.40, Inertia Vue and Core ^3.0.3, Ziggy ^2.6.5, Node.js >=24.11.0, and Vue-aware Vite and TypeScript tooling. Inertia 3.0.3 supplies the HTTP exception callback used to classify failed reads. Vue 3.5.40 preserves the component's public props and shared slot handle identity. These instructions target beta.1. Check the installed version with `composer show artisan-toolbox/dapter` before applying them to an existing installation.
 
-## Install the published alpha
+## Install the published beta
 
 In the Laravel application root, install the backend and Ziggy before the frontend.
 
 ```bash
-composer require artisan-toolbox/dapter:1.0.0-alpha.1 tightenco/ziggy:"^2.6.5"
+composer require artisan-toolbox/dapter:1.0.0-beta.1 tightenco/ziggy:"^2.6.5"
 npm pkg set 'dependencies.@artisan-toolbox/dapter=file:vendor/artisan-toolbox/dapter'
 npm install --install-links
 ```
@@ -245,7 +245,7 @@ Pass `decodeDefinition(definition)` independently of `decodeRow(row)`. Return a 
 
 ## Keep criteria in browser history
 
-The unreleased local preview uses UUID browser state for explicit protocol 2. Set `url: false` on its creator to disable persistence and sharing. Version 1 keeps persistence disabled and `share()` returns null.
+Dapter beta.1 uses UUID browser state for explicit protocol 2. Set `url: false` on its creator to disable persistence and sharing. Version 1 keeps persistence disabled and `share()` returns null.
 
 The URL contains a UUID under the source alias in snake case, such as `catalog_order_items`. An explicit owner `id` different from the source adds a `.id` suffix so two listings remain independent. Customize the source key with `StoreOptions::stateKey('catalog')`. Only requested criteria go into `localStorage`, under `dapter:state:<uuid>`. Rows, authorization, actions, and metadata are never saved.
 
@@ -347,7 +347,7 @@ use ArtisanToolbox\Dapter\Dapter;
 $version = Dapter::VERSION;
 ```
 
-The version is currently `1.0.0-alpha.1`. The service provider registers `Dapter` as a singleton. In a Vite application:
+The version is currently `1.0.0-beta.1`. The service provider registers `Dapter` as a singleton. In a Vite application:
 
 ```ts
 import { version } from '@artisan-toolbox/dapter';
@@ -474,7 +474,7 @@ See [Append records vertically](https://atb.dev.br/docs/dapter/infinite-loading)
 
 ## Keep research separate from supported APIs
 
-The unreleased local preview supports exact PostgreSQL L2 vector filtering. Provision pgvector and a matching `vector(N)` column before declaring the field. Use `searchableField('embedding', [MatchType::Vector], options: new FieldOptions(vector: new VectorOptions(dimensions: 3, maxDistance: 1.0)))`. Import `Options\VectorOptions` and `Options\FieldOptions`. Submit `catalog.fields.embedding.search.call({ value: [0, 0, 0], matchType: 'vector' })` after the source advertises the capability. Clear with `search.clear()`, not an empty string.
+Dapter beta.1 supports exact PostgreSQL L2 vector filtering. Provision pgvector and a matching `vector(N)` column before declaring the field. Use `searchableField('embedding', [MatchType::Vector], options: new FieldOptions(vector: new VectorOptions(dimensions: 3, maxDistance: 1.0)))`. Import `Options\VectorOptions` and `Options\FieldOptions`. Submit `catalog.fields.embedding.search.call({ value: [0, 0, 0], matchType: 'vector' })` after the source advertises the capability. Clear with `search.clear()`, not an empty string.
 
 Vectors are dense arrays of exactly the configured 1 through 16,000 numeric coordinates. Every coordinate must be finite with magnitude at most 1,000,000. Dapter converts them to float32 and echoes the canonical values. The nonnegative distance threshold is inclusive. Null embeddings do not match. Existing source scopes, ordering, counts, and offset, simple, or cursor pagination still apply. Results retain the declared order rather than sorting by distance. Global search, Collection, SQLite, and MySQL do not support vector operations. Dapter does not create embeddings or call AI providers. See [PostgreSQL vector search](https://atb.dev.br/docs/dapter/vector-search).
 

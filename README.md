@@ -17,14 +17,14 @@
 </p>
 <!-- MAINTAINER:README_HEAD:END -->
 
-Dapter connects Laravel data sources to headless Vue listings. Add search, filters, sorting, pagination, and authorized actions to your own presentation. The published alpha release is `1.0.0-alpha.1`.
+Dapter connects Laravel data sources to headless Vue listings. Add search, filters, sorting, pagination, and authorized actions to your own presentation. The published beta release is `1.0.0-beta.1`.
 
 ## Installation
 
 From the root of a Laravel 13 application with Inertia 3 and Vue, run Composer before npm.
 
 ```bash
-composer require artisan-toolbox/dapter:1.0.0-alpha.1 tightenco/ziggy:"^2.6.5"
+composer require artisan-toolbox/dapter:1.0.0-beta.1 tightenco/ziggy:"^2.6.5"
 npm pkg set 'dependencies.@artisan-toolbox/dapter=file:vendor/artisan-toolbox/dapter'
 npm install --install-links
 ```

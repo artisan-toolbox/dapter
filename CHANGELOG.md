@@ -9,6 +9,8 @@
 
 ## Unreleased
 
+- Align the README and Boost skill with published beta.1, including vector filtering and portable browser state.
+
 ### Features
 
 - Added exact PostgreSQL pgvector L2 field filtering with prepared float32 vectors, inclusive distance thresholds, capability admission, scoped counts, and existing paging modes. Embedding generation and distance ranking remain application concerns.
