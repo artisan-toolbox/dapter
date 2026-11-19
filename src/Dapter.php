@@ -34,10 +34,11 @@ class Dapter implements BeforeVersioning, Versionable, WithReadmeHead
             ->withLogo(src: 'logo/dapter-icon.svg', alt: '', width: 88)
             ->withTitle('Dapter')
             ->withDescription('Headless data listings for Laravel and Vue.')
+            ->addBadge(Badge::releaseVersion('https://github.com/artisan-toolbox/dapter/releases'))
             ->addBadge(Badge::make(
-                link: 'https://atb.dev.br/docs/dapter',
-                imgSrc: 'https://img.shields.io/badge/Status-Preview-FF5947?style=flat-square',
-                imgAlt: 'Preview',
+                link: 'https://packagist.org/packages/artisan-toolbox/dapter',
+                imgSrc: 'https://img.shields.io/badge/Packagist-F28D1A?style=flat-square&logo=packagist&logoColor=white',
+                imgAlt: 'Packagist',
             ))
             ->addBadge(Badge::make(
                 link: 'https://atb.dev.br/docs/dapter#requirements',

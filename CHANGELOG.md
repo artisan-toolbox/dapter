@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Use a beta stability flag in the README installation command so Composer can select a compatible Dapter release.
+
 ## [1.0.0-beta.2] - 2026-11-18
 
 ### Features

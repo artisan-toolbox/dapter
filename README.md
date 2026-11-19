@@ -5,7 +5,8 @@
 </div>
 
 <p id="maintainer-badges" align="center">
-<a href="https://atb.dev.br/docs/dapter"><img src="https://img.shields.io/badge/Status-Preview-FF5947?style=flat-square" alt="Preview"></a>
+<a href="https://github.com/artisan-toolbox/dapter/releases"><img src="https://img.shields.io/badge/version-1.0.0--beta.2-blue?style=flat-square" alt="version"></a>
+<a href="https://packagist.org/packages/artisan-toolbox/dapter"><img src="https://img.shields.io/badge/Packagist-F28D1A?style=flat-square&amp;logo=packagist&amp;logoColor=white" alt="Packagist"></a>
 <a href="https://atb.dev.br/docs/dapter#requirements"><img src="https://img.shields.io/badge/PHP-%5E8.5-777BB4?style=flat-square" alt="PHP"></a>
 <a href="https://atb.dev.br/docs/dapter#requirements"><img src="https://img.shields.io/badge/Laravel-%5E13.0-FF2D20?style=flat-square" alt="Laravel"></a>
 <a href="https://github.com/artisan-toolbox/dapter/actions/workflows/tests.yml?query=branch%3A1.x"><img src="https://img.shields.io/github/actions/workflow/status/artisan-toolbox/dapter/tests.yml?branch=1.x&amp;label=Tests&amp;style=flat-square" alt="Tests"></a>
@@ -17,14 +18,14 @@
 </p>
 <!-- MAINTAINER:README_HEAD:END -->
 
-Dapter connects Laravel data sources to headless Vue listings. Add search, filters, sorting, pagination, and authorized actions to your own presentation. The published beta release is `1.0.0-beta.1`.
+Dapter connects Laravel data sources to headless Vue listings. Add search, filters, sorting, pagination, and authorized actions to your own presentation. Dapter is in beta, and its public API may change before the first stable release.
 
 ## Installation
 
-From the root of a Laravel 13 application with Inertia 3 and Vue, run Composer before npm.
+Check the [installation requirements](https://atb.dev.br/docs/dapter/installation). From the root of a Laravel application with Inertia and Vue, run Composer before npm.
 
 ```bash
-composer require artisan-toolbox/dapter:1.0.0-beta.1 tightenco/ziggy:"^2.6.5"
+composer require 'artisan-toolbox/dapter:@beta' tightenco/ziggy
 npm pkg set 'dependencies.@artisan-toolbox/dapter=file:vendor/artisan-toolbox/dapter'
 npm install --install-links
 ```
@@ -72,11 +73,7 @@ import { DataAdapter } from '@artisan-toolbox/dapter';
 </template>
 ```
 
-After loading, the list displays Notebook and Pencil. The public attribute is explicit for this fictional catalog; authentication is required by default. Run the [functional examples](https://atb.dev.br/docs/dapter/listing) for paging, configuration, and access behavior.
-
-## Compatibility
-
-PHP ^8.5, Laravel ^13.0, Inertia Laravel ^3.0, Inertia Vue and Core ^3.0.3, Vue ^3.5.40, Ziggy ^2.6.5, and Node.js >=24.11.0 for frontend tooling. The source entry needs Vue-aware Vite and TypeScript tooling, plus `optimizeDeps.exclude` for `@artisan-toolbox/dapter` during development. Follow the [installation guide](https://atb.dev.br/docs/dapter/installation) for the consuming application's Vite configuration. Set `protocol: 2` for declared field controls. Follow the [feature guides](https://atb.dev.br/docs/dapter) for other opt-ins. The public API can change during the alpha series.
+After loading, the list displays Notebook and Pencil. The example uses the public attribute to allow guest access. Dapter requires authentication by default. Run the [functional examples](https://atb.dev.br/docs/dapter/listing) for paging, configuration, and access behavior.
 
 ## Documentation and policies
 

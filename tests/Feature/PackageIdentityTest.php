@@ -21,3 +21,12 @@ it('keeps the PHP and frontend package versions synchronized', function () {
 
     expect($package['version'])->toBe(Dapter::VERSION);
 });
+
+it('links the README badges to releases and Packagist', function () {
+    [$version, $packagist] = (new Dapter)->readmeHead()->badges();
+
+    expect($version->link())->toBe('https://github.com/artisan-toolbox/dapter/releases')
+        ->and($version->imgSrc('1.2.3-beta.4'))->toBe('https://img.shields.io/badge/version-1.2.3--beta.4-blue?style=flat-square')
+        ->and($packagist->link())->toBe('https://packagist.org/packages/artisan-toolbox/dapter')
+        ->and($packagist->imgSrc())->toBe('https://img.shields.io/badge/Packagist-F28D1A?style=flat-square&logo=packagist&logoColor=white');
+});
