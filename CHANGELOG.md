@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.0-beta.4] - 2026-11-20
+
+### Continuous Integration
+
+- **Test Dapter on PHP 8.6 and standardize CI quality checks** (`ef7e3ee`)
+  Add PHP 8.6 alongside PHP 8.5 to the Laravel 13 CI matrix on Ubuntu and Windows in both the lowest and stable dependency lanes, and document that coverage in AGENTS.md. Native database CI now tests both PHP versions with fail-fast disabled, so a failure in one lane does not stop the other. The PHP 8.5 job keeps the `native-backends` name; the new job is named `native-backends / PHP 8.6`. Both workflows upgrade the Maintainer setup action from 1.14.2 to 1.14.4. Newer pull request runs cancel older runs for the same workflow and ref, while runs for different commits on other events no longer cancel one another.
+
+Replace the standalone PHP analysis, lint, and unit-test steps and the frontend check and test steps with Maintainer’s strict, non-interactive quality command. PHP type tests and the frontend build remain separate. Locally, `composer test` now runs PHPStan, Pint, and Pest through that command before running the type tests, and `composer quality:check` also enables strict mode. Vue type checking is no longer in Maintainer’s default check list. Pest defaults to four workers on Unix and serial execution on native Windows; `MAINTAINER_PEST_PARALLEL` and `MAINTAINER_PEST_PROCESSES` control those settings. Vitest is capped at four workers. These changes expand CI coverage without raising the runtime PHP requirement.
+
 ## [1.0.0-beta.3] - 2026-11-20
 
 ### Documentation
