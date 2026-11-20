@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ github.event_name == 'pull_request' && 'latest' || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        php: [8.5]
+        php: ['8.5', '8.6']
         stability: [prefer-lowest, prefer-stable]
 
     name: P${{ matrix.php }} - L13.* - ${{ matrix.stability }} - ${{ matrix.os }}
@@ -35,7 +35,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up CI tools
-        uses: artisan-toolbox/maintainer@498f5f8723cbed3d24af0ba90870ca26010db4df # 1.14.2
+        uses: artisan-toolbox/maintainer@c46eefa9d82cdfcd53c83c06c810ca2d3b0c7c33 # 1.14.4
         with:
           php-version: ${{ matrix.php }}
           php-extensions: dom, curl, libxml, mbstring, zip, fileinfo, sqlite, pdo_sqlite, bcmath, intl
@@ -71,23 +71,11 @@ jobs:
         if: matrix.stability == 'prefer-lowest'
         run: npm install --no-save --package-lock=false --ignore-scripts @types/node@24.13.3 typescript@5.8.3 vite-plus@1.6.0 vue-tsc@3.3.14 @inertiajs/core@3.0.3 @inertiajs/vue3@3.0.3 @vitejs/plugin-vue@6.0.0 vue@3.5.40 ziggy-js@2.6.5 vite@npm:@voidzero-dev/vite-plus-core@1.6.0
 
-      - name: Analyse PHP
-        run: composer analyse
-
-      - name: Check PHP formatting
-        run: composer lint:check
+      - name: Run required quality checks
+        run: php vendor/bin/maintainer quality:check --no-interaction --strict
 
       - name: Verify PHP type coverage
         run: composer test:types
-
-      - name: Run Pest tests
-        run: composer test:unit
-
-      - name: Check frontend formatting, lint, and Vue types
-        run: npm run check
-
-      - name: Run frontend runtime and type tests
-        run: npm test
 
       - name: Build the library distribution
         run: npm run build

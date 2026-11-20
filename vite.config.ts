@@ -55,6 +55,7 @@ export default defineConfig({
         options: { denyWarnings: true, typeAware: true },
     },
     test: {
+        maxWorkers: 4,
         include: ['tests/frontend/**/*.test.ts'],
         typecheck: {
             checker: 'vue-tsc',

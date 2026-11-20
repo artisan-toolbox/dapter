@@ -38,6 +38,6 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
 - Keep the default Vite source entry and optional built `/dist` entry synchronized. Add dependencies and framework adapters only when implemented features need them.
 - Run `composer quality:check` for the configured Maintainer checks, and `npm run standards:check` for the installed contributor standards. Synchronize generated `.ai` and `.agents` copies through `.ai/sync.mjs`.
 - `Dapter` implements `Versionable` and `WithReadmeHead`. Keep `Dapter::VERSION` aligned with `package.json`, and run `php vendor/bin/maintainer readme:update --no-interaction` after editing its header metadata.
-- Use `1.x` for development and changelog automation. The CI matrix covers PHP 8.5, Laravel 13, Ubuntu, and Windows in lowest and stable dependency lanes.
+- Use `1.x` for development and changelog automation. The CI matrix covers PHP 8.5 and 8.6, Laravel 13, Ubuntu, and Windows in lowest and stable dependency lanes.
 - Keep preview capability claims aligned with the implemented public APIs, package tests, and working docs demos. Planned roadmap features remain unavailable until their delivery gates pass.
 - Maintain SVG artwork with `scripts/build-logos.py`. The workspace Font Awesome export registry owns the duotone conversion. Do not claim the custom icon is published before its manual kit upload.

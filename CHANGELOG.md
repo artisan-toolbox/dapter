@@ -19,6 +19,10 @@
 
 ## Unreleased
 
+- Test PHP 8.5 and 8.6 in CI with the Maintainer 1.14.4 setup action.
+
+- Run required PHP and frontend checks through Maintainer 1.14.3. Use four workers for Pest on Unix and for Vitest. Run Pest serially on native Windows runners.
+
 - Isolate configuration publishing and caching in the Pest suite so parallel workers can boot reliably.
 - Use the Maintainer 1.14.2 root action in both CI workflows. Validate the Git archive before installing dependencies in the compatibility matrix.
 - Use a beta stability flag in the README installation command so Composer can select a compatible Dapter release.

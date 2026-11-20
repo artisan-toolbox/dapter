@@ -98,17 +98,15 @@
             "@php vendor/bin/pest"
         ],
         "test": [
-            "@analyse",
-            "@lint:check",
-            "@test:types",
-            "@test:unit"
+            "@php vendor/bin/maintainer quality:check --no-interaction --strict --tool=phpstan --tool=pint --tool=pest",
+            "@test:types"
         ],
         "clear": [
             "@php vendor/bin/testbench package:purge-skeleton --ansi"
         ],
         "quality:check": [
             "Composer\\Config::disableProcessTimeout",
-            "@php vendor/bin/maintainer quality:check --no-interaction"
+            "@php vendor/bin/maintainer quality:check --no-interaction --strict"
         ],
         "quality:fix": [
             "Composer\\Config::disableProcessTimeout",
