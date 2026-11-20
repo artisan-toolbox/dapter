@@ -11,30 +11,49 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\Console\Exception\RuntimeException;
+use Symfony\Component\Process\Process;
 
 require_once __DIR__.'/../Fixtures/ListingSources.php';
 
-it('registers the fixed web route and publishable cacheable defaults', function () {
+it('registers the fixed web route and merges the package defaults', function () {
     $route = Route::getRoutes()->getByName('dapter.data');
     expect($route)->not->toBeNull()
         ->and($route->methods())->toBe(['POST'])
         ->and($route->gatherMiddleware())->toBe(['web'])
         ->and(config('dapter.paging.mode'))->toBe(PagingMode::Offset)
         ->and(config('dapter.access.guard'))->toBe('web');
-    File::delete(config_path('dapter.php'));
+});
+
+it('publishes and caches configuration in a standalone application', function () {
+    $directory = sys_get_temp_dir().'/dapter-config-'.bin2hex(random_bytes(16));
+    $cachePath = $directory.'/bootstrap/cache/config.php';
+    $publishedPath = $directory.'/config/dapter.php';
+    $fixture = __DIR__.'/../Fixtures/ConfigurationApplication';
+    File::makeDirectory(dirname($cachePath), recursive: true);
 
     try {
-        expect(\Orchestra\Testbench\artisan($this, 'vendor:publish', ['--tag' => 'dapter-config']))->toBe(0);
-        expect(File::get(config_path('dapter.php')))->toBe(File::get(dirname(__DIR__, 2).'/config/dapter.php'));
-        expect(\Orchestra\Testbench\artisan($this, 'config:cache'))->toBe(0);
+        File::copy($fixture.'/bootstrap.php', $directory.'/bootstrap/app.php');
+        $artisan = [PHP_BINARY, $fixture.'/artisan.php', '--no-interaction'];
+        $environment = [
+            'APP_CONFIG_CACHE' => false,
+            'APP_PACKAGES_CACHE' => false,
+            'APP_SERVICES_CACHE' => false,
+        ];
 
-        $cached = require app()->getCachedConfigPath();
+        (new Process([...$artisan, 'vendor:publish', '--tag=dapter-config'], $directory, $environment))->mustRun();
+        expect(File::get($publishedPath))->toBe(File::get(dirname(__DIR__, 2).'/config/dapter.php'));
+        $published = require $publishedPath;
+        $published['access']['guard'] = 'admin';
+        File::put($publishedPath, '<?php return '.var_export($published, true).';');
+
+        (new Process([...$artisan, 'config:cache'], $directory, $environment))->mustRun();
+        $cached = require $cachePath;
         expect($cached['dapter']['paging']['mode'])->toBe(PagingMode::Offset)
             ->and($cached['dapter']['paging']['per_page'])->toBe(10)
-            ->and($cached['dapter']['paging']['per_page_options'])->toBe([5, 10, 50, 100]);
+            ->and($cached['dapter']['paging']['per_page_options'])->toBe([5, 10, 50, 100])
+            ->and($cached['dapter']['access']['guard'])->toBe('admin');
     } finally {
-        expect(\Orchestra\Testbench\artisan($this, 'config:clear'))->toBe(0);
-        File::delete(config_path('dapter.php'));
+        File::deleteDirectory($directory);
     }
 });
 

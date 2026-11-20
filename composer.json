@@ -21,7 +21,7 @@
     ],
     "require": {
         "php": "^8.5",
-        "artisan-toolbox/maintainer": "^1.10.0",
+        "artisan-toolbox/maintainer": "^1.14.3",
         "illuminate/auth": "^13.0",
         "illuminate/broadcasting": "^13.0",
         "illuminate/cache": "^13.0",
@@ -92,7 +92,7 @@
             "@php vendor/bin/phpstan analyse --memory-limit=2G"
         ],
         "test:types": [
-            "@php vendor/bin/pest --type-coverage --min=100"
+            "@php scripts/check-type-coverage.php"
         ],
         "test:unit": [
             "@php vendor/bin/pest"

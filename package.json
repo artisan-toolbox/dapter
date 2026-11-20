@@ -58,7 +58,7 @@
     "test": "vp test run",
     "test:types": "vp test run --typecheck.only",
     "check:dist": "node scripts/check-distribution.mjs",
-    "release:build": "npm run check && npm test && npm run test:types && npm run build && npm run build:consumer && npm run check:dist",
+    "release:build": "npm run check && npm test && npm run build && npm run build:consumer && npm run check:dist",
     "standards:check": "node .ai/sync.mjs --check",
     "build:consumer": "vp build --config tests/frontend/consumer/vite.config.ts",
     "native-types:generate": "node scripts/generate-native-action-types.mjs",

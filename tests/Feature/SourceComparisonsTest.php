@@ -112,7 +112,12 @@ it('rejects malformed UTF8 in singleton locale data before a comparator can be s
 });
 
 it('omits unavailable intl while rejecting selected locale and required locale prefixes', function (): void {
-    $process = new Process([PHP_BINARY, __DIR__.'/../Fixtures/ComparisonWithoutIntl.php']);
+    $process = new Process([
+        PHP_BINARY,
+        '-d',
+        'display_errors=stderr',
+        __DIR__.'/../Fixtures/ComparisonWithoutIntl.php',
+    ]);
     $process->mustRun();
     expect(json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR))->toBe(['optional' => ['native'], 'selected' => [422, 'unsupported_operation'], 'fixed' => [500, 'invalid_source']]);
 });

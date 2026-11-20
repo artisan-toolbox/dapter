@@ -96,6 +96,14 @@ try {
         join(temporary, 'package.json'),
         JSON.stringify({ private: true, type: 'module' }),
     );
+    const runtimeSetup = join(temporary, 'runtime-setup.mjs');
+    await writeFile(
+        runtimeSetup,
+        "import { config } from '@inertiajs/vue3';\nconfig.set('form.recentlySuccessfulDuration', 0);\n",
+    );
+    function runRuntimeProof(args) {
+        return run(process.execPath, ['--import', pathToFileURL(runtimeSetup).href, ...args]);
+    }
     const lanes =
         process.env.DAPTER_CONSUMER_PEERS === 'minimum' ? ['minimum'] : ['stable', 'minimum'];
     for (const lane of lanes) {
@@ -170,7 +178,7 @@ process.stdout.write(dapter.version);`,
                 join(root, 'tests/frontend/consumer', proof),
                 'utf8',
             );
-            console.log(run(process.execPath, ['--input-type=module', '-e', nativeProof]));
+            console.log(runRuntimeProof(['--input-type=module', '-e', nativeProof]));
         }
         for (const proof of ['live', 'infinite', 'comparison']) {
             const sourceProof = (
@@ -210,9 +218,7 @@ process.stdout.write(dapter.version);`,
                     },
                 },
             });
-            console.log(
-                run(process.execPath, [join(temporary, `${proof}-source-build/proof.mjs`)]),
-            );
+            console.log(runRuntimeProof([join(temporary, `${proof}-source-build/proof.mjs`)]));
         }
         for (const entry of ['', '/dist']) {
             const comparisonTypes = await readFile(

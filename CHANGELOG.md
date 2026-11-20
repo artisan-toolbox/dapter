@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+- Isolate configuration publishing and caching in the Pest suite so parallel workers can boot reliably.
+- Use the Maintainer 1.14.2 root action in both CI workflows. Validate the Git archive before installing dependencies in the compatibility matrix.
 - Use a beta stability flag in the README installation command so Composer can select a compatible Dapter release.
+- Verify that PHP type coverage includes every source file and streamline release and CI checks while retaining the PHP and frontend compatibility matrix.
 
 ## [1.0.0-beta.2] - 2026-11-18
 

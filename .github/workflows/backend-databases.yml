@@ -16,6 +16,7 @@ concurrency:
 jobs:
   native-backends:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     services:
       mysql:
         image: mysql:8.4
@@ -48,18 +49,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Setup PHP
-        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
-          php-version: '8.5'
-          ini-values: memory_limit=128M
-          extensions: dom, curl, libxml, mbstring, zip, fileinfo, pdo_sqlite, pdo_mysql, pdo_pgsql, bcmath, intl
-          tools: composer:v2
-          coverage: none
-      - name: Install dependencies
-        run: |
-          composer update --prefer-stable --prefer-dist --no-interaction --no-progress --no-scripts
-          composer run prepare
+          persist-credentials: false
+      - name: Set up CI dependencies
+        uses: artisan-toolbox/maintainer@498f5f8723cbed3d24af0ba90870ca26010db4df # 1.14.2
+        with:
+          php-extensions: dom, curl, libxml, mbstring, zip, fileinfo, pdo_sqlite, pdo_mysql, pdo_pgsql, bcmath, intl
+          php-ini-values: memory_limit=128M
+          composer-mode: prefer-stable
+          composer-scripts: 'false'
+      - name: Discover Testbench packages
+        run: composer run prepare
       - name: Verify shared HTTP behavior on every backend
         run: |
           PGPASSWORD="$DAPTER_PGSQL_PASSWORD" psql -h 127.0.0.1 -U "$DAPTER_PGSQL_USERNAME" -d "$DAPTER_PGSQL_DATABASE" -v ON_ERROR_STOP=1 -c 'CREATE EXTENSION IF NOT EXISTS vector'
