@@ -3,7 +3,7 @@ import { HttpNetworkError, router } from "@inertiajs/core";
 import { useHttp, usePage } from "@inertiajs/vue3";
 import { route } from "ziggy-js";
 // package.json
-var version$1 = "1.0.0-beta.2";
+var version$1 = "1.0.0-beta.3";
 // resources/js/protocol.ts
 const protocolError = () => ({
 	kind: "protocol",

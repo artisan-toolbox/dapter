@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0-beta.3] - 2026-11-20
+
+### Documentation
+
+- **Clarify README badge, Vue UI reuse, and cross-package verification standards** (`df927a0`)
+  Update the documentation and package-development skills in both .ai and .agents. Published README headers must start with a GitHub Releases version badge followed by a static badge linking to the package's Packagist page; unreleased packages use an in-development badge. Keep numeric versions in badges and compatibility ranges in installation guides, scope Composer prerelease flags to the package, and verify that installation commands resolve and Maintainer regenerates the expected header. In the Vue documentation app, prefer suitable Web Awesome Vue controls from the public exports of @artisan-toolbox/front-awesome while preserving existing domain wrappers, semantic HTML, Inertia navigation, and keyboard, focus, and accessibility behavior. Document exceptions when the public API cannot meet those requirements. After finding the cause of a test, build, or static analysis failure or a critical runtime defect, check every Artisan Toolbox package, including packages that have not adopted the standards. Compare resolved dependencies and tools, code patterns, and CI lanes; run the smallest relevant check; and record each outcome or blocker. Fix and verify confirmed issues in scope and report confirmed out-of-scope issues as pending. Refresh the standards manifest and lockfile to 1.3.0 without changing the schema or skill list. No runtime or API changes.
+
+### Continuous Integration
+
+- **Streamline CI and verify PHP type coverage across all source files** (`ceb33ec`)
+  Use the Artisan Toolbox Maintainer 1.14.2 action in both CI workflows, disable checkout credential persistence, and set timeouts of 20 minutes for the main test job and 10 minutes for native backend verification. The main workflow supports manual runs and retains Ubuntu and Windows coverage with PHP 8.5, Node.js 24, and both lowest and stable Composer dependency resolution. It now uses the project's declared constraints instead of injecting Laravel 13 and Testbench 11 requirements, validates the Git archive before installing dependencies, and checks project standards before npm installation. Testbench preparation remains explicit. Separate steps make PHP analysis, formatting, type coverage, Pest tests, frontend checks and tests, library and consumer builds, and npm distribution verification easier to diagnose. Native backend CI retains its PHP extensions and memory limit but no longer pins PHP and Composer versions explicitly. Raise the Composer requirement for Maintainer to ^1.14.3 and make composer test:types fail if Pest falls below 100% type coverage or its report omits any PHP file under src/. Isolate configuration publishing and caching for parallel Pest workers; set MAINTAINER_PEST_PARALLEL=false to retain serial execution. The npm release build no longer runs the standalone frontend type-only suite, which remains available separately. Distribution verification sets Inertia's form success duration to zero in the affected test processes without changing shipped defaults. Maintainer also gains per-task AI model and locale settings and uses tests.yml as its release workflow.
+
+### Maintenance
+
+- **Update README badges and let Composer select a compatible beta** (`4b3cc1b`)
+  Replace the Preview badge in the maintained README header with a version badge linked to GitHub Releases and a Packagist badge linked to the Dapter package. Update the Composer example to use `composer require 'artisan-toolbox/dapter:@beta' tightenco/ziggy` instead of pinning Dapter to a specific beta and specifying an explicit Ziggy constraint. The package-scoped flag lets Composer select a compatible Dapter prerelease without broadening stability for the whole project. Keep the npm commands unchanged and direct readers to the installation guide for dependency requirements, Vite setup, and protocol guidance rather than duplicating them in the README. Clarify that authentication is required by default and that the example's public attribute permits guest access. Note that the public API may change before the first stable release. No runtime changes.
+
 ## Unreleased
 
 - Isolate configuration publishing and caching in the Pest suite so parallel workers can boot reliably.
